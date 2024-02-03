@@ -1,0 +1,47 @@
+MagpieExpressionLanguage {
+  // can be recursive
+  Exp (an expression)
+    = null | string | BoolExp | AddExp
+
+  AddExp (a sum)
+    = AddExp "+" MulExp           -- add
+    | AddExp "-" MulExp           -- subtract
+    | MulExp
+
+  MulExp (a product)
+    = "-" ExpExp                  -- negate
+    | MulExp "*" ExpExp           -- multiply
+    | MulExp "/" ExpExp           -- divide
+    | MulExp "%" ExpExp           -- modulo
+    | ExpExp
+
+  ExpExp (an exponentiation)
+    = PriExp ("^" | "**") ExpExp  -- power
+    | PriExp
+
+  PriExp (a primitive numeric expression)
+    = "(" Exp ")"                 -- paren
+    | number
+
+  BoolExp (a boolean expression)
+    = Exp "<" Exp                 -- lt
+    | Exp "<=" Exp                -- lte
+    | Exp ("==" | "=") Exp        -- eq
+    | Exp ("!=" | "<>") Exp       -- ne
+    | Exp ">=" Exp                -- gte
+    | Exp ">" Exp                 -- gt
+    | false | true
+
+  string (a string literal)
+    = "'" (~"'" any)* "'"
+    | "\"" (~"\"" any)* "\""
+  number (a number literal)
+    = digit* "." digit+           -- float
+    | digit+                      -- int
+  false (a false literal)
+    = caseInsensitive<"false"> | caseInsensitive<"no">
+  true (a true literal)
+    = caseInsensitive<"true"> | caseInsensitive<"yes">
+  null (a null literal)
+    = caseInsensitive<"null"> | caseInsensitive<"none"> | caseInsensitive<"nan"> | caseInsensitive<"na">
+}

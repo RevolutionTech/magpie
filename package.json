@@ -3,15 +3,23 @@
   "version": "0.1.0",
   "description": "A no-code tool for developing digital board games.",
   "scripts": {
-    "cli": "ts-node src/cli.ts"
+    "cli": "ts-node src/cli.ts",
+    "test": "jest"
   },
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.11.10",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
     "eslint": "^8.56.0",
+    "jest": "^29.7.0",
     "prettier": "^3.2.4",
+    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "ohm-js": "^17.1.0"
   }
 }
