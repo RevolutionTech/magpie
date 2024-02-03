@@ -1,7 +1,10 @@
 MagpieExpressionLanguage {
   // can be recursive
   Exp (an expression)
-    = null | string | BoolExp | AddExp | List
+    = null | string | BoolExp | AddExp | List | Variable
+
+  Variable (a variable)
+    = ident
 
   List (a list)
     = "[" (Exp ("," Exp)*)? "]"
@@ -35,6 +38,10 @@ MagpieExpressionLanguage {
     | Exp ">" Exp                 -- gt
     | false | true
 
+  ident (an identifier)
+    = letter char*
+  char (a character of a word)
+    = letter | digit | "_"
   string (a string literal)
     = "'" (~"'" any)* "'"
     | "\"" (~"\"" any)* "\""

@@ -107,7 +107,16 @@ describe("parse", () => {
     ]);
   });
 
+  it("supports variables", () => {
+    expect(parse("suit", { variables: { suit: "hearts" } })).toBe("hearts");
+    expect(parse("Suit", { variables: { suit: "hearts" } })).toBe("hearts");
+  });
+
   it("throws on unsupported text", () => {
-    expect(() => parse("hello")).toThrow();
+    expect(() => parse(".")).toThrow("Invalid expression.");
+  });
+
+  it("throws on undefined variable", () => {
+    expect(() => parse("Foo")).toThrow("Variable Foo is not defined.");
   });
 });
