@@ -7,6 +7,17 @@ const MXL_CONTENTS = fs.readFileSync(MXL_FILENAME, "utf-8");
 const MXL = ohm.grammar(MXL_CONTENTS);
 const MXL_SEMANTICS = MXL.createSemantics();
 MXL_SEMANTICS.addOperation("eval", {
+  List: (_1, possibleFirst, _2, possibleRemaining, _3) => {
+    if (possibleFirst.children.length) {
+      const first = possibleFirst.children[0].eval();
+      const remaining = possibleRemaining.children[0];
+      if (remaining.children.length) {
+        return [first, ...remaining.children.map((item) => item.eval())];
+      }
+      return [first];
+    }
+    return [];
+  },
   AddExp_add: (a, _, b) => a.eval() + b.eval(),
   AddExp_subtract: (a, _, b) => a.eval() - b.eval(),
   MulExp_negate: (_, a) => -1 * a.eval(),

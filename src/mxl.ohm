@@ -1,7 +1,10 @@
 MagpieExpressionLanguage {
   // can be recursive
   Exp (an expression)
-    = null | string | BoolExp | AddExp
+    = null | string | BoolExp | AddExp | List
+
+  List (a list)
+    = "[" (Exp ("," Exp)*)? "]"
 
   AddExp (a sum)
     = AddExp "+" MulExp           -- add

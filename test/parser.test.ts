@@ -97,6 +97,16 @@ describe("parse", () => {
     expect(parse("7 % 2 == 4 != 5")).toBe(false);
   });
 
+  it("supports lists", () => {
+    expect(parse("[1, 2, 3, 4, 5]")).toEqual([1, 2, 3, 4, 5]);
+    expect(parse('["Hello"]')).toEqual(["Hello"]);
+    expect(parse("[]")).toEqual([]);
+    expect(parse("[[1, 2, 3], [4, 5, 6]]")).toEqual([
+      [1, 2, 3],
+      [4, 5, 6],
+    ]);
+  });
+
   it("throws on unsupported text", () => {
     expect(() => parse("hello")).toThrow();
   });
