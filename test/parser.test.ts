@@ -110,6 +110,7 @@ describe("parse", () => {
   it("supports variables", () => {
     expect(parse("suit", { variables: { suit: "hearts" } })).toBe("hearts");
     expect(parse("Suit", { variables: { suit: "hearts" } })).toBe("hearts");
+    expect(parse("score / 2", { variables: { score: 10 } })).toBe(5);
   });
 
   it("supports indexing", () => {
@@ -142,7 +143,14 @@ describe("parse", () => {
     expect(parse("Count([9, 8, 7])")).toBe(3);
   });
 
-  it("throws on unsupported text", () => {
+  it("supports single-variable lambda expressions", () => {
+    expect(parse("FILTER([1, 2, 3], x => x % 2 == 1)")).toEqual([1, 3]);
+    expect(
+      parse("MAP([[1, 2], [3, 4, 5], [6, 7, 8, 9]], list => COUNT(list))")
+    ).toEqual([2, 3, 4]);
+  });
+
+  it("throws on invalid expressions", () => {
     expect(() => parse(".")).toThrow("Invalid expression.");
     expect(() => parse("1, 2, 3")).toThrow("Invalid expression.");
     expect(() =>
@@ -152,7 +160,7 @@ describe("parse", () => {
     ).toThrow("Invalid expression.");
     expect(() => parse("null[3]")).toThrow("Invalid expression.");
     expect(() => parse("false[3]")).toThrow("Invalid expression.");
-    expect(() => parse("3[3]")).toThrow("Invalid expression.");
+    expect(() => parse("MAP([[1, 2], [3, 4, 5]], COUNT)"));
   });
 
   it("throws on undefined variable", () => {
@@ -160,6 +168,7 @@ describe("parse", () => {
   });
 
   it("throws on invalid indexing", () => {
+    expect(() => parse("3[3]")).toThrow("number type cannot be indexed.");
     expect(() => parse('[1, 2, 3]["hello"]')).toThrow(
       "string type cannot be used as index."
     );

@@ -1,7 +1,10 @@
 MagpieExpressionLanguage {
   // can be recursive
   Exp (an expression)
-    = null | string | BoolExp | AddExp | IndexExp | ListLiteral | FuncExp | variable
+    = null | string | BoolExp | IndexExp | ListLiteral | FuncExp | SingleVarLambdaExp | AddExp
+
+  SingleVarLambdaExp (a single-variable lambda expression)
+    = ident "=>" Exp
 
   FuncExp (a function call)
     = ident "(" ListExp? ")"
@@ -33,7 +36,7 @@ MagpieExpressionLanguage {
 
   PriExp (a primitive numeric expression)
     = "(" Exp ")"                 -- paren
-    | number
+    | number | variable
 
   BoolExp (a boolean expression)
     = Exp "<" Exp                 -- lt

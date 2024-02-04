@@ -3,7 +3,7 @@ import * as ohm from "ohm-js";
 import * as path from "path";
 import has from "lodash/has";
 
-import { Context, getVariable } from "./context";
+import { Variable, Context, getVariable } from "./context";
 import { FUNCTIONS } from "./functions";
 
 const MXL_FILENAME = path.resolve(__dirname, "mxl.ohm");
@@ -26,12 +26,22 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
 
   const mxl_semantics = MXL.createSemantics();
   mxl_semantics.addOperation("eval", {
+    SingleVarLambdaExp:
+      (lambdaVarIdentifierNode, _, functionExpNode) => (lambdaVar: Variable) =>
+        parse(functionExpNode.sourceString, {
+          ...context,
+          variables: {
+            ...context.variables,
+            [lambdaVarIdentifierNode.sourceString]: lambdaVar,
+          },
+        }),
     FuncExp: (funcIdentifierNode, _1, optionalArgumentsNode, _2) => {
       const userProvidedFuncName = funcIdentifierNode.sourceString;
       const funcName = userProvidedFuncName.toLowerCase();
       if (has(FUNCTIONS, funcName)) {
         const func = FUNCTIONS[funcName];
         const args = parseOptionalList(optionalArgumentsNode);
+        // TODO: Perform argument validation (correct number of arguments, correct types, etc.)
         return func(...args);
       } else {
         throw new Error(`${userProvidedFuncName} is not a supported function.`);
@@ -40,10 +50,9 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
     IndexExp: (listNode, _1, indexNode, _2) => {
       const list = listNode.eval();
       const index = indexNode.eval();
-      const listType = typeof list;
       const indexType = typeof index;
-      if (Array.isArray(listType)) {
-        throw new Error(`${listType} type cannot be indexed.`);
+      if (!Array.isArray(list)) {
+        throw new Error(`${typeof list} type cannot be indexed.`);
       } else if (!["boolean", "number", "bigint"].includes(indexType)) {
         throw new Error(`${indexType} type cannot be used as index.`);
       } else if (index < 1 || index > list.length) {

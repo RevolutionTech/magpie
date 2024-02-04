@@ -1,6 +1,6 @@
 import has from "lodash/has";
 
-type Variable =
+export type Variable =
   | null
   | boolean
   | number
