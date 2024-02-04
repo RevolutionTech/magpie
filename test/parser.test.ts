@@ -136,8 +136,15 @@ describe("parse", () => {
     ).toBe("red");
   });
 
+  it("supports functions", () => {
+    expect(parse("AND(2 == 2, 1 + 1 < 5)")).toBe(true);
+    expect(parse("or(2 == 3, 5 < 2, 2 >= 5)")).toBe(false);
+    expect(parse("Count([9, 8, 7])")).toBe(3);
+  });
+
   it("throws on unsupported text", () => {
     expect(() => parse(".")).toThrow("Invalid expression.");
+    expect(() => parse("1, 2, 3")).toThrow("Invalid expression.");
     expect(() =>
       parse("card . suit", {
         variables: { card: { suit: "hearts" } },
@@ -162,5 +169,9 @@ describe("parse", () => {
     expect(() => parse("[1, 2, 3][4]")).toThrow(
       "index 4 is out of bounds for list of size 3."
     );
+  });
+
+  it("throws on invalid functions", () => {
+    expect(() => parse("FOO()")).toThrow("FOO is not a supported function.");
   });
 });

@@ -1,13 +1,19 @@
 MagpieExpressionLanguage {
   // can be recursive
   Exp (an expression)
-    = null | string | BoolExp | AddExp | IndexExp | List | variable
+    = null | string | BoolExp | AddExp | IndexExp | ListLiteral | FuncExp | variable
+
+  FuncExp (a function call)
+    = ident "(" ListExp? ")"
+
+  ListLiteral (a literal list)
+    = "[" ListExp? "]"
+
+  ListExp (a list of expressions, function arguments or part of a literal list)
+    = Exp ("," Exp)*
 
   IndexExp (an indexing into a list)
     = Exp "[" Exp "]"
-
-  List (a list)
-    = "[" (Exp ("," Exp)*)? "]"
 
   AddExp (a sum)
     = AddExp "+" MulExp           -- add

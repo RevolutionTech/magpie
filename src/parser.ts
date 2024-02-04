@@ -1,12 +1,22 @@
 import * as fs from "fs";
 import * as ohm from "ohm-js";
 import * as path from "path";
+import has from "lodash/has";
 
 import { Context, getVariable } from "./context";
+import { FUNCTIONS } from "./functions";
 
 const MXL_FILENAME = path.resolve(__dirname, "mxl.ohm");
 const MXL_CONTENTS = fs.readFileSync(MXL_FILENAME, "utf-8");
 const MXL = ohm.grammar(MXL_CONTENTS);
+
+const parseOptionalList = (optionalListNode: ohm.Node) => {
+  if (optionalListNode.children.length) {
+    return optionalListNode.children[0].eval();
+  } else {
+    return [];
+  }
+};
 
 export const parse = (s: string, context: Context = { variables: {} }) => {
   const matchResult = MXL.match(s);
@@ -16,6 +26,17 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
 
   const mxl_semantics = MXL.createSemantics();
   mxl_semantics.addOperation("eval", {
+    FuncExp: (funcIdentifierNode, _1, optionalArgumentsNode, _2) => {
+      const userProvidedFuncName = funcIdentifierNode.sourceString;
+      const funcName = userProvidedFuncName.toLowerCase();
+      if (has(FUNCTIONS, funcName)) {
+        const func = FUNCTIONS[funcName];
+        const args = parseOptionalList(optionalArgumentsNode);
+        return func(...args);
+      } else {
+        throw new Error(`${userProvidedFuncName} is not a supported function.`);
+      }
+    },
     IndexExp: (listNode, _1, indexNode, _2) => {
       const list = listNode.eval();
       const index = indexNode.eval();
@@ -33,19 +54,17 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
         return list[index - 1];
       }
     },
-    List: (_1, possibleFirstNode, _2, possibleRemainingNode, _3) => {
-      if (possibleFirstNode.children.length) {
-        const first = possibleFirstNode.children[0].eval();
-        const remainingNode = possibleRemainingNode.children[0];
-        if (remainingNode.children.length) {
-          return [
-            first,
-            ...remainingNode.children.map((itemNode) => itemNode.eval()),
-          ];
-        }
-        return [first];
+    ListLiteral: (_1, optionalListNode, _2) =>
+      parseOptionalList(optionalListNode),
+    ListExp: (firstNode, _, remainingNode) => {
+      const first = firstNode.eval();
+      if (remainingNode.children.length) {
+        return [
+          first,
+          ...remainingNode.children.map((itemNode) => itemNode.eval()),
+        ];
       }
-      return [];
+      return [first];
     },
     AddExp_add: (a, _, b) => a.eval() + b.eval(),
     AddExp_subtract: (a, _, b) => a.eval() - b.eval(),
