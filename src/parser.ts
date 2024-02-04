@@ -1,9 +1,8 @@
 import * as fs from "fs";
 import * as ohm from "ohm-js";
 import * as path from "path";
-import has from "lodash/has";
 
-import { Context } from "./context";
+import { Context, getVariable } from "./context";
 
 const MXL_FILENAME = path.resolve(__dirname, "mxl.ohm");
 const MXL_CONTENTS = fs.readFileSync(MXL_FILENAME, "utf-8");
@@ -17,21 +16,32 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
 
   const mxl_semantics = MXL.createSemantics();
   mxl_semantics.addOperation("eval", {
-    Variable: (varIdentifier) => {
-      const userVarName = varIdentifier.sourceString;
-      const varName = userVarName.toLowerCase();
-      if (has(context.variables, varName)) {
-        return context.variables[varName];
+    IndexExp: (listNode, _1, indexNode, _2) => {
+      const list = listNode.eval();
+      const index = indexNode.eval();
+      const listType = typeof list;
+      const indexType = typeof index;
+      if (Array.isArray(listType)) {
+        throw new Error(`${listType} type cannot be indexed.`);
+      } else if (!["boolean", "number", "bigint"].includes(indexType)) {
+        throw new Error(`${indexType} type cannot be used as index.`);
+      } else if (index < 1 || index > list.length) {
+        throw new Error(
+          `index ${index} is out of bounds for list of size ${list.length}.`
+        );
       } else {
-        throw new Error(`Variable ${userVarName} is not defined.`);
+        return list[index - 1];
       }
     },
-    List: (_1, possibleFirst, _2, possibleRemaining, _3) => {
-      if (possibleFirst.children.length) {
-        const first = possibleFirst.children[0].eval();
-        const remaining = possibleRemaining.children[0];
-        if (remaining.children.length) {
-          return [first, ...remaining.children.map((item) => item.eval())];
+    List: (_1, possibleFirstNode, _2, possibleRemainingNode, _3) => {
+      if (possibleFirstNode.children.length) {
+        const first = possibleFirstNode.children[0].eval();
+        const remainingNode = possibleRemainingNode.children[0];
+        if (remainingNode.children.length) {
+          return [
+            first,
+            ...remainingNode.children.map((itemNode) => itemNode.eval()),
+          ];
         }
         return [first];
       }
@@ -51,10 +61,14 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
     BoolExp_ne: (a, _, b) => a.eval() !== b.eval(),
     BoolExp_gte: (a, _, b) => a.eval() >= b.eval(),
     BoolExp_gt: (a, _, b) => a.eval() > b.eval(),
-    string: (_1, s, _2) => s.sourceString,
-    number_float: (whole, _, decimal) =>
-      parseFloat(`${whole.sourceString}.${decimal.sourceString}`),
-    number_int: (digits) => parseInt(digits.sourceString),
+    variable_property: (containerNode, _, propertyNode) =>
+      getVariable(containerNode.eval(), propertyNode.sourceString),
+    variable_variable: (varIdentifierNode) =>
+      getVariable(context.variables, varIdentifierNode.sourceString),
+    string: (_1, stringNode, _2) => stringNode.sourceString,
+    number_float: (wholeNode, _, decimalNode) =>
+      parseFloat(`${wholeNode.sourceString}.${decimalNode.sourceString}`),
+    number_int: (digitsNode) => parseInt(digitsNode.sourceString),
     false: (_) => false,
     true: (_) => true,
     null: (_) => null,

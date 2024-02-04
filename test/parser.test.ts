@@ -112,11 +112,55 @@ describe("parse", () => {
     expect(parse("Suit", { variables: { suit: "hearts" } })).toBe("hearts");
   });
 
+  it("supports indexing", () => {
+    expect(parse("[9, 8, 7][2]")).toBe(8);
+    expect(parse("[9, 8, 7][ 1 ]")).toBe(9);
+    expect(
+      parse("Suits[3]", {
+        variables: { suits: ["spades", "clubs", "hearts", "diamonds"] },
+      })
+    ).toBe("hearts");
+  });
+
+  it("supports accessing properties", () => {
+    expect(
+      parse("card.suit", { variables: { card: { suit: "hearts" } } })
+    ).toBe("hearts");
+    expect(
+      parse("card.Suit", { variables: { card: { suit: "hearts" } } })
+    ).toBe("hearts");
+    expect(
+      parse("card.suit.color", {
+        variables: { card: { suit: { color: "red" } } },
+      })
+    ).toBe("red");
+  });
+
   it("throws on unsupported text", () => {
     expect(() => parse(".")).toThrow("Invalid expression.");
+    expect(() =>
+      parse("card . suit", {
+        variables: { card: { suit: "hearts" } },
+      })
+    ).toThrow("Invalid expression.");
+    expect(() => parse("null[3]")).toThrow("Invalid expression.");
+    expect(() => parse("false[3]")).toThrow("Invalid expression.");
+    expect(() => parse("3[3]")).toThrow("Invalid expression.");
   });
 
   it("throws on undefined variable", () => {
     expect(() => parse("Foo")).toThrow("Variable Foo is not defined.");
+  });
+
+  it("throws on invalid indexing", () => {
+    expect(() => parse('[1, 2, 3]["hello"]')).toThrow(
+      "string type cannot be used as index."
+    );
+    expect(() => parse("[1, 2, 3][0]")).toThrow(
+      "index 0 is out of bounds for list of size 3."
+    );
+    expect(() => parse("[1, 2, 3][4]")).toThrow(
+      "index 4 is out of bounds for list of size 3."
+    );
   });
 });
