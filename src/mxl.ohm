@@ -1,55 +1,51 @@
 MagpieExpressionLanguage {
   // can be recursive
   Exp (an expression)
-    = null | string | BoolExp | IndexExp | ListLiteral | FuncExp | SingleVarLambdaExp | AddExp
+    = null | SingleVarLambdaExp | BoolExp
 
   SingleVarLambdaExp (a single-variable lambda expression)
     = ident "=>" Exp
 
   FuncExp (a function call)
-    = ident "(" ListExp? ")"
+    = ident "(" ListOf<Exp, ","> ")"
 
-  ListLiteral (a literal list)
-    = "[" ListExp? "]"
-
-  ListExp (a list of expressions, function arguments or part of a literal list)
-    = Exp ("," Exp)*
-
-  IndexExp (an indexing into a list)
-    = Exp "[" Exp "]"
+  BoolExp (a boolean expression)
+    = BoolExp "<" AddExp              -- lt
+    | BoolExp "<=" AddExp             -- lte
+    | BoolExp ("==" | "=") AddExp     -- eq
+    | BoolExp ("!=" | "<>") AddExp    -- ne
+    | BoolExp ">=" AddExp             -- gte
+    | BoolExp ">" AddExp              -- gt
+    | false | true | AddExp
 
   AddExp (a sum)
-    = AddExp "+" MulExp           -- add
-    | AddExp "-" MulExp           -- subtract
+    = AddExp "+" MulExp               -- add
+    | AddExp "-" MulExp               -- subtract
     | MulExp
 
   MulExp (a product)
-    = "-" ExpExp                  -- negate
-    | MulExp "*" ExpExp           -- multiply
-    | MulExp "/" ExpExp           -- divide
-    | MulExp "%" ExpExp           -- modulo
+    = "-" ExpExp                      -- negate
+    | MulExp "*" ExpExp               -- multiply
+    | MulExp "/" ExpExp               -- divide
+    | MulExp "%" ExpExp               -- modulo
     | ExpExp
 
   ExpExp (an exponentiation)
-    = PriExp ("^" | "**") ExpExp  -- power
-    | PriExp
+    = ExpExp ("^" | "**") MemberExp   -- power
+    | FuncExp | MemberExp
 
-  PriExp (a primitive numeric expression)
-    = "(" Exp ")"                 -- paren
-    | number | variable
+  MemberExp (a variable or element)
+    = MemberExp "[" Exp "]"           -- at
+    | MemberExp "." ident             -- property
+    | PrimaryExp
+    | ident                           -- variable
 
-  BoolExp (a boolean expression)
-    = Exp "<" Exp                 -- lt
-    | Exp "<=" Exp                -- lte
-    | Exp ("==" | "=") Exp        -- eq
-    | Exp ("!=" | "<>") Exp       -- ne
-    | Exp ">=" Exp                -- gte
-    | Exp ">" Exp                 -- gt
-    | false | true
+  PrimaryExp (a primary expression)
+    = "(" Exp ")"                     -- paren
+    | ListLiteral | string | number
 
-  variable (a variable)
-    = variable "." ident          -- property
-    | ident                       -- variable
+  ListLiteral (a literal list)
+    = "[" ListOf<Exp, ","> "]"
 
   ident (an identifier)
     = letter char*
@@ -59,8 +55,8 @@ MagpieExpressionLanguage {
     = "'" (~"'" any)* "'"
     | "\"" (~"\"" any)* "\""
   number (a number literal)
-    = digit* "." digit+           -- float
-    | digit+                      -- int
+    = digit* "." digit+               -- float
+    | digit+                          -- int
   false (a false literal)
     = caseInsensitive<"false"> | caseInsensitive<"no">
   true (a true literal)

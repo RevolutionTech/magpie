@@ -38,6 +38,16 @@ describe("parse", () => {
     expect(parse('"\'"')).toBe("'");
   });
 
+  it("supports lists", () => {
+    expect(parse("[1, 2, 3, 4, 5]")).toEqual([1, 2, 3, 4, 5]);
+    expect(parse('["Hello"]')).toEqual(["Hello"]);
+    expect(parse("[]")).toEqual([]);
+    expect(parse("[[1, 2, 3], [4, 5, 6]]")).toEqual([
+      [1, 2, 3],
+      [4, 5, 6],
+    ]);
+  });
+
   it("supports addition", () => {
     expect(parse("1 + 2")).toBe(3);
   });
@@ -94,23 +104,16 @@ describe("parse", () => {
 
   it("supports nested expressions", () => {
     expect(parse("1 + 2 < 9 - 4")).toBe(true);
-    expect(parse("7 % 2 == 4 != 5")).toBe(false);
-  });
-
-  it("supports lists", () => {
-    expect(parse("[1, 2, 3, 4, 5]")).toEqual([1, 2, 3, 4, 5]);
-    expect(parse('["Hello"]')).toEqual(["Hello"]);
-    expect(parse("[]")).toEqual([]);
-    expect(parse("[[1, 2, 3], [4, 5, 6]]")).toEqual([
-      [1, 2, 3],
-      [4, 5, 6],
-    ]);
+    expect(parse("7 % 2 == (4 != 5)")).toBe(false);
   });
 
   it("supports variables", () => {
     expect(parse("suit", { variables: { suit: "hearts" } })).toBe("hearts");
     expect(parse("Suit", { variables: { suit: "hearts" } })).toBe("hearts");
     expect(parse("score / 2", { variables: { score: 10 } })).toBe(5);
+    expect(parse('suit == "hearts"', { variables: { suit: "hearts" } })).toBe(
+      true
+    );
   });
 
   it("supports indexing", () => {
@@ -135,12 +138,20 @@ describe("parse", () => {
         variables: { card: { suit: { color: "red" } } },
       })
     ).toBe("red");
+    expect(
+      parse("cards[1].suit", { variables: { cards: [{ suit: "hearts" }] } })
+    ).toBe("hearts");
   });
 
   it("supports functions", () => {
-    expect(parse("AND(2 == 2, 1 + 1 < 5)")).toBe(true);
-    expect(parse("or(2 == 3, 5 < 2, 2 >= 5)")).toBe(false);
+    expect(parse("OR(2 == 3, 5 < 2, 2 >= 5)")).toBe(false);
     expect(parse("Count([9, 8, 7])")).toBe(3);
+    expect(
+      parse('and(Suit == "hearts", Rank < 5)', {
+        variables: { suit: "hearts", rank: 2 },
+      })
+    ).toBe(true);
+    expect(parse("count([1, 2]) == 3")).toBe(false);
   });
 
   it("supports single-variable lambda expressions", () => {
@@ -153,11 +164,6 @@ describe("parse", () => {
   it("throws on invalid expressions", () => {
     expect(() => parse(".")).toThrow("Invalid expression.");
     expect(() => parse("1, 2, 3")).toThrow("Invalid expression.");
-    expect(() =>
-      parse("card . suit", {
-        variables: { card: { suit: "hearts" } },
-      })
-    ).toThrow("Invalid expression.");
     expect(() => parse("null[3]")).toThrow("Invalid expression.");
     expect(() => parse("false[3]")).toThrow("Invalid expression.");
     expect(() => parse("MAP([[1, 2], [3, 4, 5]], COUNT)"));

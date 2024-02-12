@@ -19,6 +19,11 @@ const parseOptionalList = (optionalListNode: ohm.Node) => {
 };
 
 export const parse = (s: string, context: Context = { variables: {} }) => {
+  /*
+   * The parser and transformer for MXL (Magpie Expression Language).
+   * This function is responsible for matching and resolving MXL.
+   * The parser takes context (usually part of the game state) for resolving variables.
+   */
   const matchResult = MXL.match(s);
   if (!matchResult.succeeded()) {
     throw new Error("Invalid expression.");
@@ -47,7 +52,20 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
         throw new Error(`${userProvidedFuncName} is not a supported function.`);
       }
     },
-    IndexExp: (listNode, _1, indexNode, _2) => {
+    BoolExp_lt: (a, _, b) => a.eval() < b.eval(),
+    BoolExp_lte: (a, _, b) => a.eval() <= b.eval(),
+    BoolExp_eq: (a, _, b) => a.eval() === b.eval(),
+    BoolExp_ne: (a, _, b) => a.eval() !== b.eval(),
+    BoolExp_gte: (a, _, b) => a.eval() >= b.eval(),
+    BoolExp_gt: (a, _, b) => a.eval() > b.eval(),
+    AddExp_add: (a, _, b) => a.eval() + b.eval(),
+    AddExp_subtract: (a, _, b) => a.eval() - b.eval(),
+    MulExp_negate: (_, a) => -1 * a.eval(),
+    MulExp_multiply: (a, _, b) => a.eval() * b.eval(),
+    MulExp_divide: (a, _, b) => a.eval() / b.eval(),
+    MulExp_modulo: (a, _, b) => a.eval() % b.eval(),
+    ExpExp_power: (a, _, b) => a.eval() ** b.eval(),
+    MemberExp_at: (listNode, _1, indexNode, _2) => {
       const list = listNode.eval();
       const index = indexNode.eval();
       const indexType = typeof index;
@@ -63,9 +81,14 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
         return list[index - 1];
       }
     },
+    MemberExp_property: (containerNode, _, propertyNode) =>
+      getVariable(containerNode.eval(), propertyNode.sourceString),
+    MemberExp_variable: (varIdentifierNode) =>
+      getVariable(context.variables, varIdentifierNode.sourceString),
+    PrimaryExp_paren: (_1, a, _2) => a.eval(),
     ListLiteral: (_1, optionalListNode, _2) =>
       parseOptionalList(optionalListNode),
-    ListExp: (firstNode, _, remainingNode) => {
+    NonemptyListOf: (firstNode, _, remainingNode) => {
       const first = firstNode.eval();
       if (remainingNode.children.length) {
         return [
@@ -75,24 +98,7 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
       }
       return [first];
     },
-    AddExp_add: (a, _, b) => a.eval() + b.eval(),
-    AddExp_subtract: (a, _, b) => a.eval() - b.eval(),
-    MulExp_negate: (_, a) => -1 * a.eval(),
-    MulExp_multiply: (a, _, b) => a.eval() * b.eval(),
-    MulExp_divide: (a, _, b) => a.eval() / b.eval(),
-    MulExp_modulo: (a, _, b) => a.eval() % b.eval(),
-    ExpExp_power: (a, _, b) => a.eval() ** b.eval(),
-    PriExp_paren: (_1, a, _2) => a.eval(),
-    BoolExp_lt: (a, _, b) => a.eval() < b.eval(),
-    BoolExp_lte: (a, _, b) => a.eval() <= b.eval(),
-    BoolExp_eq: (a, _, b) => a.eval() === b.eval(),
-    BoolExp_ne: (a, _, b) => a.eval() !== b.eval(),
-    BoolExp_gte: (a, _, b) => a.eval() >= b.eval(),
-    BoolExp_gt: (a, _, b) => a.eval() > b.eval(),
-    variable_property: (containerNode, _, propertyNode) =>
-      getVariable(containerNode.eval(), propertyNode.sourceString),
-    variable_variable: (varIdentifierNode) =>
-      getVariable(context.variables, varIdentifierNode.sourceString),
+    EmptyListOf: () => [],
     string: (_1, stringNode, _2) => stringNode.sourceString,
     number_float: (wholeNode, _, decimalNode) =>
       parseFloat(`${wholeNode.sourceString}.${decimalNode.sourceString}`),
