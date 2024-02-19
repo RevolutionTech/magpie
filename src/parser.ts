@@ -33,11 +33,11 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
   mxl_semantics.addOperation("eval", {
     SingleVarLambdaExp:
       (lambdaVarIdentifierNode, _, functionExpNode) => (lambdaVar: Variable) =>
-        parse(functionExpNode.sourceString, {
+        parse(functionExpNode.sourceString.toLowerCase(), {
           ...context,
           variables: {
             ...context.variables,
-            [lambdaVarIdentifierNode.sourceString]: lambdaVar,
+            [lambdaVarIdentifierNode.sourceString.toLowerCase()]: lambdaVar,
           },
         }),
     FuncExp: (funcIdentifierNode, _1, optionalArgumentsNode, _2) => {

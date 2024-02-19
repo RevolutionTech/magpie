@@ -156,6 +156,7 @@ describe("parse", () => {
 
   it("supports single-variable lambda expressions", () => {
     expect(parse("FILTER([1, 2, 3], x => x % 2 == 1)")).toEqual([1, 3]);
+    expect(parse("FILTER([1, 2], X => X % 2 == 0)")).toEqual([2]);
     expect(
       parse("MAP([[1, 2], [3, 4, 5], [6, 7, 8, 9]], list => COUNT(list))")
     ).toEqual([2, 3, 4]);
