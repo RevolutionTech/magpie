@@ -3,8 +3,13 @@ import * as ohm from "ohm-js";
 import * as path from "path";
 import has from "lodash/has";
 
-import { Variable, Context, getVariable } from "./context";
 import { FUNCTIONS } from "./functions";
+import { ParserOptions } from "./types";
+import { Variable, VariableContainer, getVariable } from "./variables";
+
+type Context = {
+  variables: VariableContainer;
+};
 
 const MXL_FILENAME = path.resolve(__dirname, "mxl.ohm");
 const MXL_CONTENTS = fs.readFileSync(MXL_FILENAME, "utf-8");
@@ -18,7 +23,11 @@ const parseOptionalList = (optionalListNode: ohm.Node) => {
   }
 };
 
-export const parse = (s: string, context: Context = { variables: {} }) => {
+export const parse = (
+  s: string,
+  context: Context = { variables: {} },
+  options: ParserOptions = {}
+) => {
   /*
    * The parser and transformer for MXL (Magpie Expression Language).
    * This function is responsible for matching and resolving MXL.
@@ -82,9 +91,9 @@ export const parse = (s: string, context: Context = { variables: {} }) => {
       }
     },
     MemberExp_property: (containerNode, _, propertyNode) =>
-      getVariable(containerNode.eval(), propertyNode.sourceString),
+      getVariable(containerNode.eval(), propertyNode.sourceString, options),
     MemberExp_variable: (varIdentifierNode) =>
-      getVariable(context.variables, varIdentifierNode.sourceString),
+      getVariable(context.variables, varIdentifierNode.sourceString, options),
     PrimaryExp_paren: (_1, a, _2) => a.eval(),
     ListLiteral: (_1, optionalListNode, _2) =>
       parseOptionalList(optionalListNode),
