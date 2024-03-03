@@ -177,7 +177,7 @@
         {
           "Description": "I will win more yellow than blue cards.",
           "Clarification": "0 blue cards is allowed.",
-          "TaskCompleted": "=COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"yellow\")) + COUNT(FILTER(UNION(MAP(Players, Player => Player.Hand)), Card => Card.Suit == \"blue\")) > COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"blue\"))",
+          "TaskCompleted": "=COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"yellow\")) > COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"blue\")) + COUNT(FILTER(UNION(MAP(Players, Player => Player.Hand)), Card => Card.Suit == \"blue\"))",
           "Difficulty": 1,
           "TaskAssignee": null
         },
