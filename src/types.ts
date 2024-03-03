@@ -1,10 +1,6 @@
-import { startsWith } from "lodash";
-import { parse } from "./parser";
 import { VariableContainer } from "./variables";
-
-export type ParserOptions = {
-  resolveLocations?: boolean;
-};
+import { evaluate } from "./parser/parser";
+import { ParserOptions } from "./parser/types";
 
 export class GameState {
   variables: VariableContainer;
@@ -14,9 +10,6 @@ export class GameState {
   }
 
   parseExpression(expression: string, options: ParserOptions = {}) {
-    if (startsWith(expression, "=")) {
-      return parse(expression.slice(1), { variables: this.variables }, options);
-    }
-    return expression;
+    return evaluate(expression, { variables: this.variables }, options);
   }
 }

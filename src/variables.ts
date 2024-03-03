@@ -1,7 +1,7 @@
 import has from "lodash/has";
 import isPlainObject from "lodash/isPlainObject";
 
-import { ParserOptions } from "./types";
+import { ParserOptions } from "./parser/types";
 
 type ComponentLocation = { component: VariableContainer };
 type CollectionLocation = { collection: VariableContainer[] };

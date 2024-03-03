@@ -2,10 +2,11 @@ import * as fs from "fs";
 import * as ohm from "ohm-js";
 import * as path from "path";
 import has from "lodash/has";
+import startsWith from "lodash/startsWith";
 
-import { FUNCTIONS } from "./functions";
+import { FUNCTIONS } from "../functions";
 import { ParserOptions } from "./types";
-import { Variable, VariableContainer, getVariable } from "./variables";
+import { Variable, VariableContainer, getVariable } from "../variables";
 
 type Context = {
   variables: VariableContainer;
@@ -52,9 +53,16 @@ export const parse = (
     FuncExp: (funcIdentifierNode, _1, optionalArgumentsNode, _2) => {
       const userProvidedFuncName = funcIdentifierNode.sourceString;
       const funcName = userProvidedFuncName.toLowerCase();
-      if (has(FUNCTIONS, funcName)) {
+      const args = parseOptionalList(optionalArgumentsNode);
+      if (funcName === "eval") {
+        // HACK: provide context and options to support eval() function
+        return evaluate(
+          args[0],
+          { ...context, variables: { ...context.variables, this: args[1] } },
+          options
+        );
+      } else if (has(FUNCTIONS, funcName)) {
         const func = FUNCTIONS[funcName];
-        const args = parseOptionalList(optionalArgumentsNode);
         // https://trello.com/c/saU4aox8: Perform argument validation (correct number of arguments, correct types, etc.)
         return func(...args);
       } else {
@@ -119,4 +127,15 @@ export const parse = (
 
   const semanticAdapter = mxl_semantics(matchResult);
   return semanticAdapter.eval();
+};
+
+export const evaluate = (
+  expression: string,
+  context: Context = { variables: {} },
+  options: ParserOptions = {}
+) => {
+  if (startsWith(expression, "=")) {
+    return parse(expression.slice(1), context, options);
+  }
+  return expression;
 };

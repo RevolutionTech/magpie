@@ -1,4 +1,4 @@
-import { parse } from "../src/parser";
+import { parse } from "../src/parser/parser";
 
 describe("parse", () => {
   it("supports null literals", () => {
@@ -152,6 +152,17 @@ describe("parse", () => {
       })
     ).toBe(true);
     expect(parse("count([1, 2]) == 3")).toBe(false);
+  });
+
+  it("supports eval() function", () => {
+    expect(
+      parse('eval("=2 + 2", card)', { variables: { card: { suit: "hearts" } } })
+    ).toBe(4);
+    expect(
+      parse('eval("=This.Suit", card)', {
+        variables: { card: { suit: "hearts" } },
+      })
+    ).toBe("hearts");
   });
 
   it("supports single-variable lambda expressions", () => {
