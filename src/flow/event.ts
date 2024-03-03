@@ -1,12 +1,17 @@
-import { cloneDeep, pullAt, pull, shuffle } from "lodash";
+import cloneDeep from "lodash/cloneDeep";
+import pull from "lodash/pull";
+import pullAt from "lodash/pullAt";
+import set from "lodash/set";
+import shuffle from "lodash/shuffle";
 
 import { GameState } from "../types";
 import { assertNever } from "../utils";
 import {
-  isComponentLocation,
   Location,
-  isCollectionLocation,
   VariableContainer,
+  isComponentLocation,
+  isCollectionLocation,
+  getVariable,
 } from "../variables";
 import { BaseBlockClass } from "./base";
 import {
@@ -63,7 +68,7 @@ class SetVariableBlockClass extends BaseEventBlockClass {
    * (typically based on an expression).
    */
   eventType: EventBlockType.SET_VARIABLE;
-  variable: string;
+  variable: string; // does not support full expressions but can handle nesting
   expression: string;
 
   constructor(block: SetVariableBlock) {
@@ -72,17 +77,38 @@ class SetVariableBlockClass extends BaseEventBlockClass {
     this.expression = block.expression;
   }
 
+  traverseNestedContainer(container: VariableContainer, name: string) {
+    /*
+     * Helper to traverse nested variable containers.
+     *
+     * Handles resolution of locations via the getVariable() helper so that variables
+     * can be properly assigned to variables within a location.
+     */
+    const path = name.split(".");
+    let currentContainer = container;
+    if (path.length > 1) {
+      path.slice(undefined, -1).forEach((key) => {
+        currentContainer = getVariable(
+          currentContainer,
+          key
+        ) as VariableContainer;
+      });
+    }
+    const leafVariable = path[path.length - 1];
+    return [currentContainer, leafVariable] as const;
+  }
+
   execute(currentState: GameState) {
     const newState = new GameState(cloneDeep(currentState.variables));
+    const [container, leafVariable] = this.traverseNestedContainer(
+      newState.variables,
+      this.variable
+    );
     let expressionResult = newState.parseExpression(this.expression);
-    if (isComponentLocation(newState.variables[this.variable])) {
-      // Wrap components for ComponentLocation destinations
-      expressionResult = { component: expressionResult };
-    }
     console.log(
       `Updating ${this.variable} to ${prettyPrint(expressionResult)}.`
     );
-    newState.variables[this.variable] = expressionResult;
+    container[leafVariable] = expressionResult;
     return newState;
   }
 }

@@ -166,15 +166,59 @@
         }
       ]
     },
+    "TaskCardDeck": {
+      "collection": [
+        {
+          "Description": "I will win exactly 3x 6s.",
+          "TaskCompleted": "=AND(COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Rank == 6)) == 3, COUNT(FILTER(UNION(MAP(Players, Player => Player.WonCards)), Card => Card.Rank == 6)) == 4)",
+          "Difficulty": 4,
+          "TaskAssignee": null
+        },
+        {
+          "Description": "I will win more yellow than blue cards.",
+          "Clarification": "0 blue cards is allowed.",
+          "TaskCompleted": "=COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"yellow\")) + COUNT(FILTER(UNION(MAP(Players, Player => Player.Hand)), Card => Card.Suit == \"blue\")) > COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"blue\"))",
+          "Difficulty": 1,
+          "TaskAssignee": null
+        },
+        {
+          "Description": "I will win the green 9 with a trump.",
+          "TaskCompleted": "=AND(This.TaskAssignee.LastPlayed.Suit == \"trump\", FIND(This.TaskAssignee.LastWon, Card => AND(Card.Suit == \"green\", Card.Rank == 9)))",
+          "Difficulty": 3,
+          "TaskAssignee": null
+        },
+        {
+          "Description": "I will win exactly 1 trump.",
+          "Clarification": "If trump cards 1, 2, 3, 4 are in one hand, re-deal the playing cards.",
+          "TaskCompleted": "=AND(COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"trump\")) == 1, COUNT(FILTER(UNION(MAP(Players, Player => Player.WonCards)), Card => Card.Suit == \"trump\")) == 4)",
+          "Difficulty": 3,
+          "TaskAssignee": null
+        },
+        {
+          "Description": "I will win the first trick.",
+          "TaskCompleted": "=COUNT(This.TaskAssignee.WonCards) == COUNT(UNION(MAP(Players, Player => Player.WonCards)))",
+          "Difficulty": 1,
+          "TaskAssignee": null
+        },
+        {
+          "Description": "I will win the blue 9, pink 9, yellow 9, and green 9.",
+          "TaskCompleted": "=COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Rank == 9)) == 4",
+          "Difficulty": 6,
+          "TaskAssignee": null
+        }
+      ]
+    },
+    "SelectedTask": { "component": null },
+    "AllTasksCompleted": false,
     "CurrentCard": { "component": null },
     "Leader": null,
-    "TaskAssignee": null,
-    "LeadSuit": null,
-    "TaskCompleted": false
+    "LeadSuit": null
   },
   "playerVariables": {
     "Hand": { "collection": [] },
     "PlayArea": { "component": null },
+    "LastPlayed": { "component": null },
+    "LastWon": { "collection": [] },
     "WonCards": { "collection": [] }
   },
   "flow": [
@@ -191,7 +235,7 @@
         {
           "type": "phase",
           "repetition": "forever",
-          "name": "Dealing",
+          "name": "Dealing Playing Cards",
           "blocks": [
             {
               "type": "event",
@@ -235,6 +279,18 @@
               "expression": "=(ActivePlayerIndex % COUNT(Players)) + 1"
             }
           ]
+        },
+        {
+          "type": "event",
+          "eventType": "shuffle",
+          "stack": "TaskCardDeck"
+        },
+        {
+          "type": "event",
+          "eventType": "moveComponent",
+          "source": "=TaskCardDeck",
+          "pickMethod": "draw",
+          "destination": "=SelectedTask"
         }
       ]
     },
@@ -256,7 +312,7 @@
                 {
                   "type": "event",
                   "eventType": "setVariable",
-                  "variable": "TaskAssignee",
+                  "variable": "SelectedTask.TaskAssignee",
                   "expression": "=Current"
                 },
                 {
@@ -282,7 +338,7 @@
                 {
                   "type": "event",
                   "eventType": "setVariable",
-                  "variable": "TaskAssignee",
+                  "variable": "SelectedTask.TaskAssignee",
                   "expression": "=Current"
                 },
                 {
@@ -330,6 +386,12 @@
                   ]
                 },
                 {
+                  "type": "event",
+                  "eventType": "setVariable",
+                  "variable": "Current.LastPlayed",
+                  "expression": "=PlayedCard"
+                },
+                {
                   "type": "condition",
                   "expression": "=ISNULL(LeadSuit)",
                   "whenTrue": [
@@ -358,6 +420,12 @@
               "expression": "=MAXBY(Players, Player => [Player.PlayArea.Suit == \"trump\", Player.PlayArea.Suit == LeadSuit, Player.PlayArea.Rank])"
             },
             {
+              "type": "event",
+              "eventType": "setVariable",
+              "variable": "Leader.LastWon",
+              "expression": "=MAP(Players, Player => Player.PlayArea)"
+            },
+            {
               "type": "phase",
               "repetition": "forEachPlayer",
               "name": "Discard Play",
@@ -373,19 +441,19 @@
             {
               "type": "event",
               "eventType": "setVariable",
-              "variable": "TaskCompleted",
-              "expression": "=AND(COUNT(FILTER(TaskAssignee.WonCards, Card => Card.Rank == 6)) == 3, COUNT(FILTER(UNION(MAP(Players, Player => Player.WonCards)), Card => Card.Rank == 6)) == 4)"
+              "variable": "AllTasksCompleted",
+              "expression": "=EVAL(SelectedTask.TaskCompleted, SelectedTask)"
             }
           ]
         },
         {
           "type": "condition",
-          "expression": "=OR(TaskCompleted, ANY(Players, Player => COUNT(Player.Hand) == 0))",
+          "expression": "=OR(AllTasksCompleted, ANY(Players, Player => COUNT(Player.Hand) == 0))",
           "whenTrue": [
             {
               "type": "event",
               "eventType": "endGame",
-              "winners": "=FILTER(Players, x => TaskCompleted)"
+              "winners": "=FILTER(Players, x => AllTasksCompleted)"
             }
           ]
         }
