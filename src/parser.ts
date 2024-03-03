@@ -55,7 +55,7 @@ export const parse = (
       if (has(FUNCTIONS, funcName)) {
         const func = FUNCTIONS[funcName];
         const args = parseOptionalList(optionalArgumentsNode);
-        // TODO: Perform argument validation (correct number of arguments, correct types, etc.)
+        // https://trello.com/c/saU4aox8: Perform argument validation (correct number of arguments, correct types, etc.)
         return func(...args);
       } else {
         throw new Error(`${userProvidedFuncName} is not a supported function.`);

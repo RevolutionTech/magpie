@@ -31,7 +31,7 @@ export class GameController {
   constructor(filename: string) {
     console.log(`Reading game definition from ${filename}.`);
     const fileContents = fs.readFileSync(filename, "utf-8");
-    // TODO: Perform validation of game definition
+    // https://trello.com/c/uY2A0RmG: Perform validation of game definition
     const definition: GameDefinition = JSON.parse(fileContents);
 
     console.log("Initializing game.");

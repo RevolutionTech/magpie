@@ -77,7 +77,6 @@ class SetVariableBlockClass extends BaseEventBlockClass {
     let expressionResult = newState.parseExpression(this.expression);
     if (isComponentLocation(newState.variables[this.variable])) {
       // Wrap components for ComponentLocation destinations
-      // TODO: Simplify logic for wrapping ComponentLocation destinations
       expressionResult = { component: expressionResult };
     }
     console.log(

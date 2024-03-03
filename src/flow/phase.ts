@@ -83,7 +83,7 @@ export abstract class BasePhaseBlockClass extends BaseBlockClass {
         }
         newState = new GameState({
           ...newState.variables,
-          // TODO: Properly type currentindex in game state and make read-only
+          // https://trello.com/c/ASBUCh50: Properly type currentindex in game state and make read-only
           currentindex: (newState.variables.currentindex as number) + 1,
         });
       }
@@ -148,7 +148,7 @@ class EachPlayerPhaseBlockClass extends BasePhaseBlockClass {
       return 0;
     } else {
       const parsedExpression = gameState.parseExpression(this.startingPlayer);
-      // TODO: Throw error if not number or player
+      // https://trello.com/c/qotJQ9W1: Throw error if not number or player
       const playerId =
         typeof parsedExpression === "number"
           ? parsedExpression
@@ -158,7 +158,7 @@ class EachPlayerPhaseBlockClass extends BasePhaseBlockClass {
   }
 
   getPlayerOrder(gameState: GameState) {
-    // TODO: Properly type players in game state (do not allow users to overwrite read-only aspects of players)
+    // https://trello.com/c/ffPR3cvR: Properly type players in game state (do not allow users to overwrite read-only aspects of players)
     const players = gameState.variables.players as VariableContainer[];
     const playerIds = range(1, players.length + 1);
     return shiftArray(playerIds, this.getPlayerOrderShiftNum(gameState));
