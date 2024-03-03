@@ -4,7 +4,8 @@
   "description": "A no-code tool for developing digital board games.",
   "scripts": {
     "cli": "ts-node src/cli.ts",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noemit"
   },
   "license": "ISC",
   "devDependencies": {

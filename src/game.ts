@@ -3,13 +3,13 @@ import cloneDeep from "lodash/cloneDeep";
 import range from "lodash/range";
 
 import {
-  GameState,
   EndGameFlowSignal,
   BlockType,
   PhaseRepetition,
   FlowBlock,
-  OncePhaseBlockClass,
-} from "./flow";
+} from "./flow/types";
+import { OncePhaseBlockClass } from "./flow/phase";
+import { GameState } from "./types";
 import { mapKeysDeep } from "./utils";
 import { VariableContainer } from "./variables";
 
