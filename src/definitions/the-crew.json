@@ -1,171 +1,171 @@
 {
   "numPlayers": 5,
-  "playingCardDeck": {
-    "collection": [
-      {
-        "Suit": "blue",
-        "Rank": 1
-      },
-      {
-        "Suit": "blue",
-        "Rank": 2
-      },
-      {
-        "Suit": "blue",
-        "Rank": 3
-      },
-      {
-        "Suit": "blue",
-        "Rank": 4
-      },
-      {
-        "Suit": "blue",
-        "Rank": 5
-      },
-      {
-        "Suit": "blue",
-        "Rank": 6
-      },
-      {
-        "Suit": "blue",
-        "Rank": 7
-      },
-      {
-        "Suit": "blue",
-        "Rank": 8
-      },
-      {
-        "Suit": "blue",
-        "Rank": 9
-      },
-      {
-        "Suit": "pink",
-        "Rank": 1
-      },
-      {
-        "Suit": "pink",
-        "Rank": 2
-      },
-      {
-        "Suit": "pink",
-        "Rank": 3
-      },
-      {
-        "Suit": "pink",
-        "Rank": 4
-      },
-      {
-        "Suit": "pink",
-        "Rank": 5
-      },
-      {
-        "Suit": "pink",
-        "Rank": 6
-      },
-      {
-        "Suit": "pink",
-        "Rank": 7
-      },
-      {
-        "Suit": "pink",
-        "Rank": 8
-      },
-      {
-        "Suit": "pink",
-        "Rank": 9
-      },
-      {
-        "Suit": "green",
-        "Rank": 1
-      },
-      {
-        "Suit": "green",
-        "Rank": 2
-      },
-      {
-        "Suit": "green",
-        "Rank": 3
-      },
-      {
-        "Suit": "green",
-        "Rank": 4
-      },
-      {
-        "Suit": "green",
-        "Rank": 5
-      },
-      {
-        "Suit": "green",
-        "Rank": 6
-      },
-      {
-        "Suit": "green",
-        "Rank": 7
-      },
-      {
-        "Suit": "green",
-        "Rank": 8
-      },
-      {
-        "Suit": "green",
-        "Rank": 9
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 1
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 2
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 3
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 4
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 5
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 6
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 7
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 8
-      },
-      {
-        "Suit": "yellow",
-        "Rank": 9
-      },
-      {
-        "Suit": "trump",
-        "Rank": 1
-      },
-      {
-        "Suit": "trump",
-        "Rank": 2
-      },
-      {
-        "Suit": "trump",
-        "Rank": 3
-      },
-      {
-        "Suit": "trump",
-        "Rank": 4
-      }
-    ]
-  },
   "globalVariables": {
     "ActivePlayerIndex": 1,
+    "PlayingCardDeck": {
+      "collection": [
+        {
+          "Suit": "blue",
+          "Rank": 1
+        },
+        {
+          "Suit": "blue",
+          "Rank": 2
+        },
+        {
+          "Suit": "blue",
+          "Rank": 3
+        },
+        {
+          "Suit": "blue",
+          "Rank": 4
+        },
+        {
+          "Suit": "blue",
+          "Rank": 5
+        },
+        {
+          "Suit": "blue",
+          "Rank": 6
+        },
+        {
+          "Suit": "blue",
+          "Rank": 7
+        },
+        {
+          "Suit": "blue",
+          "Rank": 8
+        },
+        {
+          "Suit": "blue",
+          "Rank": 9
+        },
+        {
+          "Suit": "pink",
+          "Rank": 1
+        },
+        {
+          "Suit": "pink",
+          "Rank": 2
+        },
+        {
+          "Suit": "pink",
+          "Rank": 3
+        },
+        {
+          "Suit": "pink",
+          "Rank": 4
+        },
+        {
+          "Suit": "pink",
+          "Rank": 5
+        },
+        {
+          "Suit": "pink",
+          "Rank": 6
+        },
+        {
+          "Suit": "pink",
+          "Rank": 7
+        },
+        {
+          "Suit": "pink",
+          "Rank": 8
+        },
+        {
+          "Suit": "pink",
+          "Rank": 9
+        },
+        {
+          "Suit": "green",
+          "Rank": 1
+        },
+        {
+          "Suit": "green",
+          "Rank": 2
+        },
+        {
+          "Suit": "green",
+          "Rank": 3
+        },
+        {
+          "Suit": "green",
+          "Rank": 4
+        },
+        {
+          "Suit": "green",
+          "Rank": 5
+        },
+        {
+          "Suit": "green",
+          "Rank": 6
+        },
+        {
+          "Suit": "green",
+          "Rank": 7
+        },
+        {
+          "Suit": "green",
+          "Rank": 8
+        },
+        {
+          "Suit": "green",
+          "Rank": 9
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 1
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 2
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 3
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 4
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 5
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 6
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 7
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 8
+        },
+        {
+          "Suit": "yellow",
+          "Rank": 9
+        },
+        {
+          "Suit": "trump",
+          "Rank": 1
+        },
+        {
+          "Suit": "trump",
+          "Rank": 2
+        },
+        {
+          "Suit": "trump",
+          "Rank": 3
+        },
+        {
+          "Suit": "trump",
+          "Rank": 4
+        }
+      ]
+    },
     "CurrentCard": { "component": null },
     "Leader": null,
     "TaskAssignee": null,

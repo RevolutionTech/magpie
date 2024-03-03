@@ -13,12 +13,8 @@ import { GameState } from "./types";
 import { mapKeysDeep } from "./utils";
 import { VariableContainer } from "./variables";
 
-type PlayingCard = {
-  variables: VariableContainer;
-};
 type GameDefinition = {
   numPlayers: number;
-  playingCardDeck: PlayingCard[];
   globalVariables: VariableContainer;
   playerVariables: VariableContainer;
   flow: FlowBlock[];
@@ -38,7 +34,6 @@ export class GameController {
     const variableContainer = mapKeysDeep(
       {
         ...cloneDeep(definition.globalVariables),
-        PlayingCardDeck: cloneDeep(definition.playingCardDeck),
         Players: range(definition.numPlayers).map((i) => ({
           ...cloneDeep(definition.playerVariables),
           id: i + 1,
