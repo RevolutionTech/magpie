@@ -194,7 +194,9 @@ class ShuffleBlockClass extends BaseEventBlockClass {
     const stackLocation = newState.variables[this.stack];
     if (isCollectionLocation(stackLocation)) {
       console.log(`Shuffling ${this.stack}.`);
-      shuffle(stackLocation.collection);
+      newState.variables[this.stack] = {
+        collection: shuffle(stackLocation.collection),
+      };
       return newState;
     } else {
       throw new Error(
