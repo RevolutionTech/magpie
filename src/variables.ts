@@ -22,12 +22,12 @@ export const isCollectionLocation = (x: any): x is CollectionLocation =>
   isPlainObject(x) && "collection" in x;
 
 export const getVariable = (
-  container: VariableContainer,
+  container: VariableContainer | null,
   name: string,
   options: ParserOptions = {}
 ) => {
   const storedName = name.toLowerCase();
-  if (has(container, storedName)) {
+  if (container != null && has(container, storedName)) {
     const variable = container[storedName];
     const resolveLocations = options.resolveLocations ?? true;
     if (resolveLocations && isComponentLocation(variable)) {
@@ -38,6 +38,6 @@ export const getVariable = (
       return variable;
     }
   } else {
-    throw new Error(`Variable ${name} is not defined.`);
+    return null;
   }
 };

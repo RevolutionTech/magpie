@@ -170,45 +170,51 @@
       "collection": [
         {
           "Description": "I will win exactly 3x 6s.",
-          "TaskCompleted": "=AND(COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Rank == 6)) == 3, COUNT(FILTER(UNION(MAP(Players, Player => Player.WonCards)), Card => Card.Rank == 6)) == 4)",
-          "Difficulty": 4,
-          "TaskAssignee": null
+          "TaskCompleted": "=AND(COUNT(FILTER(This.WonCards, Card => Card.Rank == 6)) == 3, COUNT(FILTER(UNION(MAP(Players, Player => Player.WonCards)), Card => Card.Rank == 6)) == 4)",
+          "Difficulty": 4
         },
         {
           "Description": "I will win more yellow than blue cards.",
           "Clarification": "0 blue cards is allowed.",
-          "TaskCompleted": "=COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"yellow\")) > COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"blue\")) + COUNT(FILTER(UNION(MAP(Players, Player => Player.Hand)), Card => Card.Suit == \"blue\"))",
-          "Difficulty": 1,
-          "TaskAssignee": null
+          "TaskCompleted": "=COUNT(FILTER(This.WonCards, Card => Card.Suit == \"yellow\")) > COUNT(FILTER(This.WonCards, Card => Card.Suit == \"blue\")) + COUNT(FILTER(UNION(MAP(Players, Player => Player.Hand)), Card => Card.Suit == \"blue\"))",
+          "Difficulty": 1
         },
         {
           "Description": "I will win the green 9 with a trump.",
-          "TaskCompleted": "=AND(This.TaskAssignee.LastPlayed.Suit == \"trump\", FIND(This.TaskAssignee.LastWon, Card => AND(Card.Suit == \"green\", Card.Rank == 9)))",
-          "Difficulty": 3,
-          "TaskAssignee": null
+          "TaskCompleted": "=AND(This.LastPlayed.Suit == \"trump\", FIND(This.LastWon, Card => AND(Card.Suit == \"green\", Card.Rank == 9)))",
+          "Difficulty": 3
         },
         {
           "Description": "I will win exactly 1 trump.",
           "Clarification": "If trump cards 1, 2, 3, 4 are in one hand, re-deal the playing cards.",
-          "TaskCompleted": "=AND(COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Suit == \"trump\")) == 1, COUNT(FILTER(UNION(MAP(Players, Player => Player.WonCards)), Card => Card.Suit == \"trump\")) == 4)",
-          "Difficulty": 3,
-          "TaskAssignee": null
+          "TaskCompleted": "=AND(COUNT(FILTER(This.WonCards, Card => Card.Suit == \"trump\")) == 1, COUNT(FILTER(UNION(MAP(Players, Player => Player.WonCards)), Card => Card.Suit == \"trump\")) == 4)",
+          "Difficulty": 3
         },
         {
           "Description": "I will win the first trick.",
-          "TaskCompleted": "=COUNT(This.TaskAssignee.WonCards) == COUNT(UNION(MAP(Players, Player => Player.WonCards)))",
-          "Difficulty": 1,
-          "TaskAssignee": null
+          "TaskCompleted": "=COUNT(This.WonCards) == COUNT(UNION(MAP(Players, Player => Player.WonCards)))",
+          "Difficulty": 1
         },
         {
           "Description": "I will win the blue 9, pink 9, yellow 9, and green 9.",
-          "TaskCompleted": "=COUNT(FILTER(This.TaskAssignee.WonCards, Card => Card.Rank == 9)) == 4",
-          "Difficulty": 6,
-          "TaskAssignee": null
+          "TaskCompleted": "=COUNT(FILTER(This.WonCards, Card => Card.Rank == 9)) == 4",
+          "Difficulty": 6
+        },
+        {
+          "Description": "I will win more pink than green cards.",
+          "Clarification": "0 green cards is allowed.",
+          "TaskCompleted": "=COUNT(FILTER(This.WonCards, Card => Card.Suit == \"pink\")) > COUNT(FILTER(This.WonCards, Card => Card.Suit == \"green\")) + COUNT(FILTER(UNION(MAP(Players, Player => Player.Hand)), Card => Card.Suit == \"green\"))",
+          "Difficulty": 1
+        },
+        {
+          "Description": "I will win the blue 4.",
+          "TaskCompleted": "=FIND(This.WonCards, Card => AND(Card.Suit == \"blue\", Card.Rank == 4))",
+          "Difficulty": 1
         }
       ]
     },
-    "SelectedTask": { "component": null },
+    "TotalDifficulty": 4,
+    "DrawnTasks": { "collection": [] },
     "AllTasksCompleted": false,
     "CurrentCard": { "component": null },
     "Leader": null,
@@ -216,6 +222,7 @@
   },
   "playerVariables": {
     "Hand": { "collection": [] },
+    "Task": { "component": null },
     "PlayArea": { "component": null },
     "LastPlayed": { "component": null },
     "LastWon": { "collection": [] },
@@ -241,7 +248,7 @@
               "type": "event",
               "eventType": "moveComponent",
               "source": "=PlayingCardDeck",
-              "pickMethod": "draw",
+              "pickMethod": "top",
               "destination": "=CurrentCard"
             },
             {
@@ -286,11 +293,29 @@
           "stack": "TaskCardDeck"
         },
         {
-          "type": "event",
-          "eventType": "moveComponent",
-          "source": "=TaskCardDeck",
-          "pickMethod": "draw",
-          "destination": "=SelectedTask"
+          "type": "phase",
+          "repetition": "forever",
+          "name": "Draw Tasks",
+          "blocks": [
+            {
+              "type": "event",
+              "eventType": "moveComponent",
+              "source": "=TaskCardDeck",
+              "pickMethod": "criteria",
+              "searchExpression": "=Task => Task.Difficulty <= TotalDifficulty - SUM(MAP(DrawnTasks, Task => Task.Difficulty))",
+              "destination": "=DrawnTasks"
+            },
+            {
+              "type": "condition",
+              "expression": "=SUM(MAP(DrawnTasks, Task => Task.Difficulty)) == TotalDifficulty",
+              "whenTrue": [
+                {
+                  "type": "event",
+                  "eventType": "endPhase"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -306,41 +331,57 @@
           "name": "Consider Task",
           "blocks": [
             {
-              "type": "condition",
-              "expression": "=CurrentIndex == COUNT(Players)",
-              "whenTrue": [
-                {
-                  "type": "event",
-                  "eventType": "setVariable",
-                  "variable": "SelectedTask.TaskAssignee",
-                  "expression": "=Current"
-                },
-                {
-                  "type": "event",
-                  "eventType": "endPhase"
-                }
-              ]
+              "type": "event",
+              "eventType": "setVariable",
+              "variable": "WillTakeTask",
+              "expression": "=COUNT(Players) - CurrentIndex < COUNT(DrawnTasks)"
             },
             {
-              "type": "input",
-              "form": [
+              "type": "condition",
+              "expression": "=NOT(WillTakeTask)",
+              "whenTrue": [
                 {
-                  "type": "boolean",
-                  "name": "DoesWantTask",
-                  "label": "Do you want the task?"
+                  "type": "input",
+                  "form": [
+                    {
+                      "type": "boolean",
+                      "name": "WillTakeTask",
+                      "label": "Do you want to take a task?"
+                    }
+                  ]
                 }
               ]
             },
             {
               "type": "condition",
-              "expression": "=DoesWantTask",
+              "expression": "=WillTakeTask",
               "whenTrue": [
                 {
-                  "type": "event",
-                  "eventType": "setVariable",
-                  "variable": "SelectedTask.TaskAssignee",
-                  "expression": "=Current"
+                  "type": "input",
+                  "form": [
+                    {
+                      "type": "card",
+                      "options": "=DrawnTasks",
+                      "isOptionValid": "=Option => True",
+                      "name": "SelectedTask",
+                      "label": "Choose a task:"
+                    }
+                  ]
                 },
+                {
+                  "type": "event",
+                  "eventType": "moveComponent",
+                  "pickMethod": "specific",
+                  "searchExpression": "=SelectedTask",
+                  "source": "=DrawnTasks",
+                  "destination": "=Current.Task"
+                }
+              ]
+            },
+            {
+              "type": "condition",
+              "expression": "=COUNT(DrawnTasks) == 0",
+              "whenTrue": [
                 {
                   "type": "event",
                   "eventType": "endPhase"
@@ -406,8 +447,8 @@
                 {
                   "type": "event",
                   "eventType": "moveComponent",
-                  "pickMethod": "find",
-                  "pickFindExpression": "=PlayedCard",
+                  "pickMethod": "specific",
+                  "searchExpression": "=PlayedCard",
                   "source": "=Current.Hand",
                   "destination": "=Current.PlayArea"
                 }
@@ -442,7 +483,7 @@
               "type": "event",
               "eventType": "setVariable",
               "variable": "AllTasksCompleted",
-              "expression": "=EVAL(SelectedTask.TaskCompleted, SelectedTask)"
+              "expression": "=ALL(MAP(Players, Player => OR(ISNULL(Player.Task), EVAL(Player.Task.TaskCompleted, Player))))"
             }
           ]
         },

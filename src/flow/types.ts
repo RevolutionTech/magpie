@@ -32,8 +32,9 @@ export enum EventBlockType {
   END_GAME = "endGame",
 }
 export enum CollectionPickMethod {
-  DRAW = "draw",
-  FIND = "find",
+  TOP = "top",
+  SPECIFIC = "specific",
+  CRITERIA = "criteria",
 }
 type BaseEventBlock = {
   type: BlockType.EVENT;
@@ -48,7 +49,7 @@ export type MoveComponentBlock = BaseEventBlock & {
   eventType: EventBlockType.MOVE_COMPONENT;
   source: string;
   pickMethod?: CollectionPickMethod;
-  pickFindExpression?: string;
+  searchExpression?: string;
   destination: string;
 };
 export type ShuffleBlock = BaseEventBlock & {

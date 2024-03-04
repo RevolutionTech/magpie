@@ -58,9 +58,9 @@ MagpieExpressionLanguage {
     = digit* "." digit+               -- float
     | digit+                          -- int
   false (a false literal)
-    = caseInsensitive<"false"> | caseInsensitive<"no">
+    = caseInsensitive<"false"> ~char | caseInsensitive<"no"> ~char
   true (a true literal)
-    = caseInsensitive<"true"> | caseInsensitive<"yes">
+    = caseInsensitive<"true"> ~char | caseInsensitive<"yes"> ~char
   null (a null literal)
-    = caseInsensitive<"null"> | caseInsensitive<"none"> | caseInsensitive<"nan"> | caseInsensitive<"na">
+    = caseInsensitive<"null"> ~char | caseInsensitive<"none"> ~char | caseInsensitive<"nan"> ~char | caseInsensitive<"na"> ~char
 }

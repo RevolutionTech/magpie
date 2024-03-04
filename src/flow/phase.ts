@@ -69,11 +69,12 @@ export abstract class BasePhaseBlockClass extends BaseBlockClass {
      */
     console.log(`Beginning new phase: ${this.name}.`);
 
+    let currentIndex = 1;
     const beforeLoopState = this.beforeLoop(currentState);
 
     let newState = new GameState({
       ...beforeLoopState.variables,
-      currentindex: 1,
+      currentindex: currentIndex,
     });
     try {
       while (this.shouldExecute()) {
@@ -81,10 +82,11 @@ export abstract class BasePhaseBlockClass extends BaseBlockClass {
         for (const block of this.blocks) {
           newState = await block.execute(newState);
         }
+        currentIndex += 1;
         newState = new GameState({
           ...newState.variables,
-          // https://trello.com/c/ASBUCh50: Properly type currentindex in game state and make read-only
-          currentindex: (newState.variables.currentindex as number) + 1,
+          // https://trello.com/c/ASBUCh50: Properly type currentindex in game state
+          currentindex: currentIndex,
         });
       }
     } catch (e) {

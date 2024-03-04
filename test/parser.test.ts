@@ -116,6 +116,11 @@ describe("parse", () => {
     );
   });
 
+  it("resolves undefined variables as null", () => {
+    expect(parse("Foo")).toBe(null);
+    expect(parse("Foo.Bar")).toBe(null);
+  });
+
   it("supports indexing", () => {
     expect(parse("[9, 8, 7][2]")).toBe(8);
     expect(parse("[9, 8, 7][ 1 ]")).toBe(9);
@@ -179,10 +184,6 @@ describe("parse", () => {
     expect(() => parse("null[3]")).toThrow("Invalid expression.");
     expect(() => parse("false[3]")).toThrow("Invalid expression.");
     expect(() => parse("MAP([[1, 2], [3, 4, 5]], COUNT)"));
-  });
-
-  it("throws on undefined variable", () => {
-    expect(() => parse("Foo")).toThrow("Variable Foo is not defined.");
   });
 
   it("throws on invalid indexing", () => {

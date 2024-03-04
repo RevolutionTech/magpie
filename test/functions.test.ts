@@ -1,6 +1,6 @@
 import { FUNCTIONS } from "../src/functions";
 
-const { isnull, or, and, union, count, filter, map } = FUNCTIONS;
+const { isnull, not, or, and, union, count, filter, map } = FUNCTIONS;
 
 describe("ISNULL", () => {
   it("returns true for null values", () => {
@@ -15,6 +15,24 @@ describe("ISNULL", () => {
   it("returns false for truthy values", () => {
     expect(isnull(true)).toBe(false);
     expect(isnull(2)).toBe(false);
+  });
+});
+
+describe("NOT", () => {
+  it("returns the inverse boolean value", () => {
+    expect(not(true)).toBe(false);
+    expect(not(false)).toBe(true);
+  });
+
+  it("returns true for falsey values", () => {
+    expect(not(null)).toBe(true);
+    expect(not(0)).toBe(true);
+    expect(not("")).toBe(true);
+  });
+
+  it("returns false for truthy values", () => {
+    expect(not(1)).toBe(false);
+    expect(not("foo")).toBe(false);
   });
 });
 

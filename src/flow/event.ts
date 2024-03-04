@@ -1,7 +1,7 @@
 import cloneDeep from "lodash/cloneDeep";
+import find from "lodash/find";
 import pull from "lodash/pull";
 import pullAt from "lodash/pullAt";
-import set from "lodash/set";
 import shuffle from "lodash/shuffle";
 
 import { GameState } from "../types";
@@ -122,8 +122,9 @@ class MoveComponentBlockClass extends BaseEventBlockClass {
    * from that location (to be moved to the proper destination).
    * If the source is a reference to a collection, a method must be specified for how
    * to take a single component from that collection.
-   * The method could be "draw", to draw the first item in the collection.
-   * The method could instead be "find", to find for a specific item in the collection.
+   * The method could be "top", to draw the first item in the collection.
+   * The method could instead be "specific", to find a specific item in the collection.
+   * The method could instead be "criteria", to find an item meeting the given criteria.
    *
    * The destination location may be an empty location or contain a collection of components.
    * If the destination is a reference to an empty location, the component is moved there.
@@ -132,14 +133,14 @@ class MoveComponentBlockClass extends BaseEventBlockClass {
   eventType: EventBlockType.MOVE_COMPONENT;
   source: string;
   pickMethod?: CollectionPickMethod;
-  pickFindExpression?: string;
+  searchExpression?: string;
   destination: string;
 
   constructor(block: MoveComponentBlock) {
     super();
     this.source = block.source;
     this.pickMethod = block.pickMethod;
-    this.pickFindExpression = block.pickFindExpression;
+    this.searchExpression = block.searchExpression;
     this.destination = block.destination;
   }
 
@@ -147,14 +148,22 @@ class MoveComponentBlockClass extends BaseEventBlockClass {
     console.log(`Extracting component from ${prettyPrint(location)}.`);
     if (isCollectionLocation(location)) {
       switch (this.pickMethod) {
-        case CollectionPickMethod.DRAW:
+        case CollectionPickMethod.TOP:
           return pullAt(location.collection, 0)[0];
-        case CollectionPickMethod.FIND:
+        case CollectionPickMethod.SPECIFIC:
           const componentToFind = gameState.parseExpression(
-            this.pickFindExpression
+            this.searchExpression
           );
           pull(location.collection, componentToFind);
           return componentToFind;
+        case CollectionPickMethod.CRITERIA:
+          const lambda = gameState.parseExpression(this.searchExpression);
+          const specific = find(location.collection, lambda);
+          if (specific == null) {
+            return null;
+          }
+          pull(location.collection, specific);
+          return specific;
         case undefined:
           throw new Error(
             "A pick method must be provided when move components from a collection."
