@@ -213,7 +213,7 @@
         }
       ]
     },
-    "TotalDifficulty": 4,
+    "TotalDifficulty": null,
     "DrawnTasks": { "collection": [] },
     "AllTasksCompleted": false,
     "CurrentCard": { "component": null },
@@ -229,6 +229,23 @@
     "WonCards": { "collection": [] }
   },
   "flow": [
+    {
+      "type": "phase",
+      "repetition": "once",
+      "name": "Game Configuration",
+      "blocks": [
+        {
+          "type": "input",
+          "form": [
+            {
+              "type": "number",
+              "name": "TotalDifficulty",
+              "label": "What difficulty level?"
+            }
+          ]
+        }
+      ]
+    },
     {
       "type": "phase",
       "repetition": "once",
@@ -307,7 +324,7 @@
             },
             {
               "type": "condition",
-              "expression": "=SUM(MAP(DrawnTasks, Task => Task.Difficulty)) == TotalDifficulty",
+              "expression": "=OR(SUM(MAP(DrawnTasks, Task => Task.Difficulty)) == TotalDifficulty, MIN(MAP(TaskCardDeck, Task => Task.Difficulty)) > TotalDifficulty - SUM(MAP(DrawnTasks, Task => Task.Difficulty)))",
               "whenTrue": [
                 {
                   "type": "event",

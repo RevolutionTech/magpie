@@ -76,16 +76,19 @@ export type ConditionBlock = {
 
 export enum InputFieldType {
   BOOLEAN = "boolean",
+  NUMBER = "number",
   CARD = "card",
 }
 type BaseInputField = { name: string; label: string };
-type BooleanInputField = BaseInputField & { type: InputFieldType.BOOLEAN };
+type PrimitiveInputField = BaseInputField & {
+  type: InputFieldType.BOOLEAN | InputFieldType.NUMBER;
+};
 type PlayingCardInputField = BaseInputField & {
   type: InputFieldType.CARD;
   options: string;
   isOptionValid: string;
 };
-export type InputField = BooleanInputField | PlayingCardInputField;
+export type InputField = PrimitiveInputField | PlayingCardInputField;
 export type InputBlock = {
   type: BlockType.INPUT;
   form: InputField[];

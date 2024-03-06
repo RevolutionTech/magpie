@@ -32,6 +32,8 @@ export class InputBlockClass extends BaseBlockClass {
             ...baseQuestion,
             type: "confirm",
           };
+        case InputFieldType.NUMBER:
+          return { ...baseQuestion, type: "number" };
         case InputFieldType.CARD:
           // PROBLEM: We aren't actually removing the card from the hand when a user selects a card this way
           const allCards = gameState.parseExpression(field.options);
