@@ -9,12 +9,13 @@ import {
   FlowBlock,
 } from "./flow/types";
 import { OncePhaseBlockClass } from "./flow/phase";
+import { PlayerCountRange, requestNumPlayers } from "./players";
 import { GameState } from "./types";
 import { mapKeysDeep } from "./utils";
 import { VariableContainer } from "./variables";
 
 type GameDefinition = {
-  numPlayers: number;
+  numPlayers: PlayerCountRange;
   globalVariables: VariableContainer;
   playerVariables: VariableContainer;
   flow: FlowBlock[];
@@ -24,17 +25,18 @@ export class GameController {
   state: GameState;
   flow: FlowBlock[];
 
-  constructor(filename: string) {
+  async initialize(filename: string) {
     console.log(`Reading game definition from ${filename}.`);
     const fileContents = fs.readFileSync(filename, "utf-8");
     // https://trello.com/c/uY2A0RmG: Perform validation of game definition
     const definition: GameDefinition = JSON.parse(fileContents);
 
     console.log("Initializing game.");
+    const numPlayers = await requestNumPlayers(definition.numPlayers);
     const variableContainer = mapKeysDeep(
       {
         ...cloneDeep(definition.globalVariables),
-        Players: range(definition.numPlayers).map((i) => ({
+        Players: range(numPlayers).map((i) => ({
           ...cloneDeep(definition.playerVariables),
           id: i + 1,
           name: `Player ${i + 1}`,

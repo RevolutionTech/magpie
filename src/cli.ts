@@ -7,5 +7,10 @@ const DEFINITION_FILENAME = path.resolve(
   "definitions",
   "the-crew.json"
 );
-const GAME = new GameController(DEFINITION_FILENAME);
-GAME.execute();
+
+const run = async () => {
+  const game = new GameController();
+  await game.initialize(DEFINITION_FILENAME);
+  await game.execute();
+};
+run();

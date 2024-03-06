@@ -1,5 +1,8 @@
 {
-  "numPlayers": 5,
+  "numPlayers": {
+    "min": 3,
+    "max": 5
+  },
   "globalVariables": {
     "ActivePlayerIndex": 1,
     "PlayingCardDeck": {
