@@ -4,6 +4,7 @@ import max from "lodash/max";
 import maxBy from "lodash/maxBy";
 import min from "lodash/min";
 import minBy from "lodash/minBy";
+import range from "lodash/range";
 import some from "lodash/some";
 import sum from "lodash/sum";
 import lodashUnion from "lodash/union";
@@ -18,6 +19,16 @@ const filter = (list: unknown[], lambda: (x: unknown) => any) =>
   list.filter(lambda);
 const map = (list: unknown[], lambda: (x: unknown) => unknown) =>
   list.map(lambda);
+const ifs = (...args: unknown[]) => {
+  for (const i of range(0, args.length - 1, 2)) {
+    if (args[i]) {
+      return args[i + 1];
+    }
+  }
+  return args[args.length - 1];
+};
+const if_ = (when: boolean, then: unknown, else_: unknown) =>
+  ifs(when, then, else_);
 
 export const FUNCTIONS = {
   isnull,
@@ -36,4 +47,6 @@ export const FUNCTIONS = {
   find,
   filter,
   map,
+  if: if_,
+  ifs,
 };

@@ -226,6 +226,7 @@
   "playerVariables": {
     "Hand": { "collection": [] },
     "Task": { "component": null },
+    "Communication": { "Card": { "component": null }, "Location": null },
     "PlayArea": { "component": null },
     "LastPlayed": { "component": null },
     "LastWon": { "collection": [] },
@@ -417,6 +418,59 @@
       "repetition": "forever",
       "name": "Round",
       "blocks": [
+        {
+          "type": "phase",
+          "repetition": "forEachPlayer",
+          "name": "Consider Communication",
+          "blocks": [
+            {
+              "type": "condition",
+              "expression": "=AND(ISNULL(Current.Communication.Location), COUNT(FILTER(Current.Hand, Card => Card.Suit != \"trump\")) > 0)",
+              "whenTrue": [
+                {
+                  "type": "input",
+                  "form": [
+                    {
+                      "type": "boolean",
+                      "name": "DoesWantCommunicate",
+                      "label": "Do you want to communicate one of your cards?"
+                    }
+                  ]
+                },
+                {
+                  "type": "condition",
+                  "expression": "=DoesWantCommunicate",
+                  "whenTrue": [
+                    {
+                      "type": "input",
+                      "form": [
+                        {
+                          "type": "card",
+                          "options": "=Current.Hand",
+                          "isOptionValid": "=Option => AND(Option.Suit != \"trump\", OR(Option.Rank == MIN(MAP(FILTER(Current.Hand, Card => Card.Suit == Option.Suit), Card => Card.Rank)), Option.Rank == MAX(MAP(FILTER(Current.Hand, Card => Card.Suit == Option.Suit), Card => Card.Rank))))",
+                          "name": "CardToCommunicate",
+                          "label": "Choose a card:"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "event",
+                      "eventType": "setVariable",
+                      "variable": "Current.Communication.Location",
+                      "expression": "=IFS(COUNT(FILTER(Current.Hand, Card => Card.Suit == CardToCommunicate.Suit)) == 1, \"middle\", CardToCommunicate.Rank == MIN(MAP(FILTER(Current.Hand, Card => Card.Suit == CardToCommunicate.Suit), Card => Card.Rank)), \"bottom\", \"top\")"
+                    },
+                    {
+                      "type": "event",
+                      "eventType": "setVariable",
+                      "variable": "Current.Communication.Card",
+                      "expression": "=CardToCommunicate"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         {
           "type": "phase",
           "repetition": "once",

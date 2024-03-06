@@ -1,6 +1,17 @@
 import { FUNCTIONS } from "../src/functions";
 
-const { isnull, not, or, and, union, count, filter, map } = FUNCTIONS;
+const {
+  isnull,
+  not,
+  or,
+  and,
+  union,
+  count,
+  filter,
+  map,
+  if: if_,
+  ifs,
+} = FUNCTIONS;
 
 describe("ISNULL", () => {
   it("returns true for null values", () => {
@@ -89,5 +100,22 @@ describe("FILTER", () => {
 describe("MAP", () => {
   it("transforms each item in the array by applying the given function", () => {
     expect(map([1, 2, 3], (x: number) => x * 2)).toEqual([2, 4, 6]);
+  });
+});
+
+describe("IF", () => {
+  it("returns the first value when condition is true", () => {
+    expect(if_(true, "foo", "bar")).toBe("foo");
+  });
+  it("returns the second value when condition is false", () => {
+    expect(if_(false, "foo", "bar")).toBe("bar");
+  });
+});
+
+describe("IFS", () => {
+  it("supports 5+ arguments", () => {
+    expect(ifs(true, "foo", true, "bar", "baz")).toBe("foo");
+    expect(ifs(false, "foo", true, "bar", "baz")).toBe("bar");
+    expect(ifs(false, "foo", false, "bar", "baz")).toBe("baz");
   });
 });
