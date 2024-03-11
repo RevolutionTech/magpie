@@ -2,13 +2,10 @@ import * as fs from "fs";
 import cloneDeep from "lodash/cloneDeep";
 import range from "lodash/range";
 
-import {
-  EndGameFlowSignal,
-  BlockType,
-  PhaseRepetition,
-  FlowBlock,
-} from "./flow/types";
-import { OncePhaseBlockClass } from "./flow/phase";
+import { FlowBlock } from "./flow/types";
+import { EndGameFlowSignal } from "./phase/types";
+import { OncePhase } from "./phase/phase";
+import { PhaseDefinition } from "./phase/types";
 import { PlayerCountRange, requestNumPlayers } from "./players";
 import { GameState } from "./types";
 import { mapKeysDeep } from "./utils";
@@ -18,11 +15,13 @@ type GameDefinition = {
   numPlayers: PlayerCountRange;
   globalVariables: VariableContainer;
   playerVariables: VariableContainer;
+  phases: Record<string, PhaseDefinition>;
   flow: FlowBlock[];
 };
 
 export class GameController {
   state: GameState;
+  phases: Record<string, PhaseDefinition>;
   flow: FlowBlock[];
 
   async initialize(filename: string) {
@@ -45,14 +44,13 @@ export class GameController {
       (_, key) => key.toLowerCase()
     );
     this.state = new GameState(variableContainer);
+    this.phases = definition.phases;
     this.flow = definition.flow;
   }
 
   async execute() {
     try {
-      return await new OncePhaseBlockClass({
-        type: BlockType.PHASE,
-        repetition: PhaseRepetition.ONCE,
+      return await new OncePhase(this.phases, "Game", {
         blocks: this.flow,
       }).execute(this.state);
     } catch (e) {

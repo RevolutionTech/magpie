@@ -232,11 +232,8 @@
     "LastWon": { "collection": [] },
     "WonCards": { "collection": [] }
   },
-  "flow": [
-    {
-      "type": "phase",
-      "repetition": "once",
-      "name": "Game Configuration",
+  "phases": {
+    "GameConfiguration": {
       "blocks": [
         {
           "type": "input",
@@ -250,10 +247,76 @@
         }
       ]
     },
-    {
-      "type": "phase",
-      "repetition": "once",
-      "name": "Setup",
+    "DealingPlayingCards": {
+      "repetition": "forever",
+      "blocks": [
+        {
+          "type": "event",
+          "eventType": "moveComponent",
+          "source": "=PlayingCardDeck",
+          "pickMethod": "top",
+          "destination": "=CurrentCard"
+        },
+        {
+          "type": "condition",
+          "expression": "=AND(CurrentCard.Suit == \"trump\", CurrentCard.Rank == 4)",
+          "whenTrue": [
+            {
+              "type": "event",
+              "eventType": "setVariable",
+              "variable": "Leader",
+              "expression": "=Players[ActivePlayerIndex]"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "eventType": "moveComponent",
+          "source": "=CurrentCard",
+          "destination": "=Players[ActivePlayerIndex].Hand"
+        },
+        {
+          "type": "condition",
+          "expression": "=COUNT(PlayingCardDeck) == 0",
+          "whenTrue": [
+            {
+              "type": "event",
+              "eventType": "endPhase"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "eventType": "setVariable",
+          "variable": "ActivePlayerIndex",
+          "expression": "=(ActivePlayerIndex % COUNT(Players)) + 1"
+        }
+      ]
+    },
+    "DrawTasks": {
+      "repetition": "forever",
+      "blocks": [
+        {
+          "type": "event",
+          "eventType": "moveComponent",
+          "source": "=TaskCardDeck",
+          "pickMethod": "criteria",
+          "searchExpression": "=Task => Task.Difficulty <= TotalDifficulty - SUM(MAP(DrawnTasks, Task => Task.Difficulty))",
+          "destination": "=DrawnTasks"
+        },
+        {
+          "type": "condition",
+          "expression": "=OR(SUM(MAP(DrawnTasks, Task => Task.Difficulty)) == TotalDifficulty, MIN(MAP(TaskCardDeck, Task => Task.Difficulty)) > TotalDifficulty - SUM(MAP(DrawnTasks, Task => Task.Difficulty)))",
+          "whenTrue": [
+            {
+              "type": "event",
+              "eventType": "endPhase"
+            }
+          ]
+        }
+      ]
+    },
+    "Setup": {
       "blocks": [
         {
           "type": "event",
@@ -262,51 +325,7 @@
         },
         {
           "type": "phase",
-          "repetition": "forever",
-          "name": "Dealing Playing Cards",
-          "blocks": [
-            {
-              "type": "event",
-              "eventType": "moveComponent",
-              "source": "=PlayingCardDeck",
-              "pickMethod": "top",
-              "destination": "=CurrentCard"
-            },
-            {
-              "type": "condition",
-              "expression": "=AND(CurrentCard.Suit == \"trump\", CurrentCard.Rank == 4)",
-              "whenTrue": [
-                {
-                  "type": "event",
-                  "eventType": "setVariable",
-                  "variable": "Leader",
-                  "expression": "=Players[ActivePlayerIndex]"
-                }
-              ]
-            },
-            {
-              "type": "event",
-              "eventType": "moveComponent",
-              "source": "=CurrentCard",
-              "destination": "=Players[ActivePlayerIndex].Hand"
-            },
-            {
-              "type": "condition",
-              "expression": "=COUNT(PlayingCardDeck) == 0",
-              "whenTrue": [
-                {
-                  "type": "event",
-                  "eventType": "endPhase"
-                }
-              ]
-            },
-            {
-              "type": "event",
-              "eventType": "setVariable",
-              "variable": "ActivePlayerIndex",
-              "expression": "=(ActivePlayerIndex % COUNT(Players)) + 1"
-            }
-          ]
+          "phase": "DealingPlayingCards"
         },
         {
           "type": "event",
@@ -315,187 +334,103 @@
         },
         {
           "type": "phase",
-          "repetition": "forever",
-          "name": "Draw Tasks",
-          "blocks": [
-            {
-              "type": "event",
-              "eventType": "moveComponent",
-              "source": "=TaskCardDeck",
-              "pickMethod": "criteria",
-              "searchExpression": "=Task => Task.Difficulty <= TotalDifficulty - SUM(MAP(DrawnTasks, Task => Task.Difficulty))",
-              "destination": "=DrawnTasks"
-            },
-            {
-              "type": "condition",
-              "expression": "=OR(SUM(MAP(DrawnTasks, Task => Task.Difficulty)) == TotalDifficulty, MIN(MAP(TaskCardDeck, Task => Task.Difficulty)) > TotalDifficulty - SUM(MAP(DrawnTasks, Task => Task.Difficulty)))",
-              "whenTrue": [
-                {
-                  "type": "event",
-                  "eventType": "endPhase"
-                }
-              ]
-            }
-          ]
+          "phase": "DrawTasks"
         }
       ]
     },
-    {
-      "type": "phase",
-      "repetition": "once",
-      "name": "Distribute Tasks",
+    "DistributeTasks": {
+      "repetition": "forEachPlayer",
+      "startingPlayer": "=Leader",
       "blocks": [
         {
-          "type": "phase",
-          "repetition": "forEachPlayer",
-          "startingPlayer": "=Leader",
-          "name": "Consider Task",
-          "blocks": [
-            {
-              "type": "event",
-              "eventType": "setVariable",
-              "variable": "WillTakeTask",
-              "expression": "=COUNT(Players) - CurrentIndex < COUNT(DrawnTasks)"
-            },
-            {
-              "type": "condition",
-              "expression": "=NOT(WillTakeTask)",
-              "whenTrue": [
-                {
-                  "type": "input",
-                  "form": [
-                    {
-                      "type": "boolean",
-                      "name": "WillTakeTask",
-                      "label": "Do you want to take a task?"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "condition",
-              "expression": "=WillTakeTask",
-              "whenTrue": [
-                {
-                  "type": "input",
-                  "form": [
-                    {
-                      "type": "card",
-                      "options": "=DrawnTasks",
-                      "isOptionValid": "=Option => True",
-                      "name": "SelectedTask",
-                      "label": "Choose a task:"
-                    }
-                  ]
-                },
-                {
-                  "type": "event",
-                  "eventType": "moveComponent",
-                  "pickMethod": "specific",
-                  "searchExpression": "=SelectedTask",
-                  "source": "=DrawnTasks",
-                  "destination": "=Current.Task"
-                }
-              ]
-            },
-            {
-              "type": "condition",
-              "expression": "=COUNT(DrawnTasks) == 0",
-              "whenTrue": [
-                {
-                  "type": "event",
-                  "eventType": "endPhase"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "phase",
-      "repetition": "forever",
-      "name": "Round",
-      "blocks": [
+          "type": "event",
+          "eventType": "setVariable",
+          "variable": "WillTakeTask",
+          "expression": "=COUNT(Players) - CurrentIndex < COUNT(DrawnTasks)"
+        },
         {
-          "type": "phase",
-          "repetition": "forEachPlayer",
-          "name": "Consider Communication",
-          "blocks": [
+          "type": "condition",
+          "expression": "=NOT(WillTakeTask)",
+          "whenTrue": [
             {
-              "type": "condition",
-              "expression": "=AND(ISNULL(Current.Communication.Location), COUNT(FILTER(Current.Hand, Card => Card.Suit != \"trump\")) > 0)",
-              "whenTrue": [
+              "type": "input",
+              "form": [
                 {
-                  "type": "input",
-                  "form": [
-                    {
-                      "type": "boolean",
-                      "name": "DoesWantCommunicate",
-                      "label": "Do you want to communicate one of your cards?"
-                    }
-                  ]
-                },
-                {
-                  "type": "condition",
-                  "expression": "=DoesWantCommunicate",
-                  "whenTrue": [
-                    {
-                      "type": "input",
-                      "form": [
-                        {
-                          "type": "card",
-                          "options": "=Current.Hand",
-                          "isOptionValid": "=Option => AND(Option.Suit != \"trump\", OR(Option.Rank == MIN(MAP(FILTER(Current.Hand, Card => Card.Suit == Option.Suit), Card => Card.Rank)), Option.Rank == MAX(MAP(FILTER(Current.Hand, Card => Card.Suit == Option.Suit), Card => Card.Rank))))",
-                          "name": "CardToCommunicate",
-                          "label": "Choose a card:"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "event",
-                      "eventType": "setVariable",
-                      "variable": "Current.Communication.Location",
-                      "expression": "=IFS(COUNT(FILTER(Current.Hand, Card => Card.Suit == CardToCommunicate.Suit)) == 1, \"middle\", CardToCommunicate.Rank == MIN(MAP(FILTER(Current.Hand, Card => Card.Suit == CardToCommunicate.Suit), Card => Card.Rank)), \"bottom\", \"top\")"
-                    },
-                    {
-                      "type": "event",
-                      "eventType": "setVariable",
-                      "variable": "Current.Communication.Card",
-                      "expression": "=CardToCommunicate"
-                    }
-                  ]
+                  "type": "boolean",
+                  "name": "WillTakeTask",
+                  "label": "Do you want to take a task?"
                 }
               ]
             }
           ]
         },
         {
-          "type": "phase",
-          "repetition": "once",
-          "name": "Trick",
-          "blocks": [
+          "type": "condition",
+          "expression": "=WillTakeTask",
+          "whenTrue": [
             {
-              "type": "event",
-              "eventType": "setVariable",
-              "variable": "LeadSuit",
-              "expression": "=NULL"
+              "type": "input",
+              "form": [
+                {
+                  "type": "card",
+                  "options": "=DrawnTasks",
+                  "isOptionValid": "=Option => True",
+                  "name": "SelectedTask",
+                  "label": "Choose a task:"
+                }
+              ]
             },
             {
-              "type": "phase",
-              "repetition": "forEachPlayer",
-              "startingPlayer": "=Leader",
-              "name": "Play Card",
-              "blocks": [
+              "type": "event",
+              "eventType": "moveComponent",
+              "pickMethod": "specific",
+              "searchExpression": "=SelectedTask",
+              "source": "=DrawnTasks",
+              "destination": "=Current.Task"
+            }
+          ]
+        },
+        {
+          "type": "condition",
+          "expression": "=COUNT(DrawnTasks) == 0",
+          "whenTrue": [
+            {
+              "type": "event",
+              "eventType": "endPhase"
+            }
+          ]
+        }
+      ]
+    },
+    "ConsiderCommunication": {
+      "repetition": "forEachPlayer",
+      "blocks": [
+        {
+          "type": "condition",
+          "expression": "=AND(ISNULL(Current.Communication.Location), COUNT(FILTER(Current.Hand, Card => Card.Suit != \"trump\")) > 0)",
+          "whenTrue": [
+            {
+              "type": "input",
+              "form": [
+                {
+                  "type": "boolean",
+                  "name": "DoesWantCommunicate",
+                  "label": "Do you want to communicate one of your cards?"
+                }
+              ]
+            },
+            {
+              "type": "condition",
+              "expression": "=DoesWantCommunicate",
+              "whenTrue": [
                 {
                   "type": "input",
                   "form": [
                     {
                       "type": "card",
                       "options": "=Current.Hand",
-                      "isOptionValid": "=Option => OR(ISNULL(LeadSuit), Option.Suit == LeadSuit, COUNT(FILTER(Current.Hand, Card => Card.Suit == LeadSuit)) == 0)",
-                      "name": "PlayedCard",
+                      "isOptionValid": "=Option => AND(Option.Suit != \"trump\", OR(Option.Rank == MIN(MAP(FILTER(Current.Hand, Card => Card.Suit == Option.Suit), Card => Card.Rank)), Option.Rank == MAX(MAP(FILTER(Current.Hand, Card => Card.Suit == Option.Suit), Card => Card.Rank))))",
+                      "name": "CardToCommunicate",
                       "label": "Choose a card:"
                     }
                   ]
@@ -503,63 +438,121 @@
                 {
                   "type": "event",
                   "eventType": "setVariable",
-                  "variable": "Current.LastPlayed",
-                  "expression": "=PlayedCard"
-                },
-                {
-                  "type": "condition",
-                  "expression": "=ISNULL(LeadSuit)",
-                  "whenTrue": [
-                    {
-                      "type": "event",
-                      "eventType": "setVariable",
-                      "variable": "LeadSuit",
-                      "expression": "=PlayedCard.Suit"
-                    }
-                  ]
+                  "variable": "Current.Communication.Location",
+                  "expression": "=IFS(COUNT(FILTER(Current.Hand, Card => Card.Suit == CardToCommunicate.Suit)) == 1, \"middle\", CardToCommunicate.Rank == MIN(MAP(FILTER(Current.Hand, Card => Card.Suit == CardToCommunicate.Suit), Card => Card.Rank)), \"bottom\", \"top\")"
                 },
                 {
                   "type": "event",
-                  "eventType": "moveComponent",
-                  "pickMethod": "specific",
-                  "searchExpression": "=PlayedCard",
-                  "source": "=Current.Hand",
-                  "destination": "=Current.PlayArea"
+                  "eventType": "setVariable",
+                  "variable": "Current.Communication.Card",
+                  "expression": "=CardToCommunicate"
                 }
               ]
-            },
-            {
-              "type": "event",
-              "eventType": "setVariable",
-              "variable": "Leader",
-              "expression": "=MAXBY(Players, Player => [Player.PlayArea.Suit == \"trump\", Player.PlayArea.Suit == LeadSuit, Player.PlayArea.Rank])"
-            },
-            {
-              "type": "event",
-              "eventType": "setVariable",
-              "variable": "Leader.LastWon",
-              "expression": "=MAP(Players, Player => Player.PlayArea)"
-            },
-            {
-              "type": "phase",
-              "repetition": "forEachPlayer",
-              "name": "Discard Play",
-              "blocks": [
-                {
-                  "type": "event",
-                  "eventType": "moveComponent",
-                  "source": "=Current.PlayArea",
-                  "destination": "=Leader.WonCards"
-                }
-              ]
-            },
-            {
-              "type": "event",
-              "eventType": "setVariable",
-              "variable": "AllTasksCompleted",
-              "expression": "=ALL(MAP(Players, Player => OR(ISNULL(Player.Task), EVAL(Player.Task.TaskCompleted, Player))))"
             }
           ]
+        }
+      ]
+    },
+    "PlayCard": {
+      "repetition": "forEachPlayer",
+      "startingPlayer": "=Leader",
+      "blocks": [
+        {
+          "type": "input",
+          "form": [
+            {
+              "type": "card",
+              "options": "=Current.Hand",
+              "isOptionValid": "=Option => OR(ISNULL(LeadSuit), Option.Suit == LeadSuit, COUNT(FILTER(Current.Hand, Card => Card.Suit == LeadSuit)) == 0)",
+              "name": "PlayedCard",
+              "label": "Choose a card:"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "eventType": "setVariable",
+          "variable": "Current.LastPlayed",
+          "expression": "=PlayedCard"
+        },
+        {
+          "type": "condition",
+          "expression": "=ISNULL(LeadSuit)",
+          "whenTrue": [
+            {
+              "type": "event",
+              "eventType": "setVariable",
+              "variable": "LeadSuit",
+              "expression": "=PlayedCard.Suit"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "eventType": "moveComponent",
+          "pickMethod": "specific",
+          "searchExpression": "=PlayedCard",
+          "source": "=Current.Hand",
+          "destination": "=Current.PlayArea"
+        }
+      ]
+    },
+    "DiscardPlay": {
+      "repetition": "forEachPlayer",
+      "blocks": [
+        {
+          "type": "event",
+          "eventType": "moveComponent",
+          "source": "=Current.PlayArea",
+          "destination": "=Leader.WonCards"
+        }
+      ]
+    },
+    "Trick": {
+      "blocks": [
+        {
+          "type": "event",
+          "eventType": "setVariable",
+          "variable": "LeadSuit",
+          "expression": "=NULL"
+        },
+        {
+          "type": "phase",
+          "phase": "PlayCard"
+        },
+        {
+          "type": "event",
+          "eventType": "setVariable",
+          "variable": "Leader",
+          "expression": "=MAXBY(Players, Player => [Player.PlayArea.Suit == \"trump\", Player.PlayArea.Suit == LeadSuit, Player.PlayArea.Rank])"
+        },
+        {
+          "type": "event",
+          "eventType": "setVariable",
+          "variable": "Leader.LastWon",
+          "expression": "=MAP(Players, Player => Player.PlayArea)"
+        },
+        {
+          "type": "phase",
+          "phase": "DiscardPlay"
+        },
+        {
+          "type": "event",
+          "eventType": "setVariable",
+          "variable": "AllTasksCompleted",
+          "expression": "=ALL(MAP(Players, Player => OR(ISNULL(Player.Task), EVAL(Player.Task.TaskCompleted, Player))))"
+        }
+      ]
+    },
+    "Round": {
+      "blocks": [
+        {
+          "type": "phase",
+          "phase": "ConsiderCommunication"
+        },
+        {
+          "type": "phase",
+          "phase": "Trick"
         },
         {
           "type": "condition",
@@ -573,6 +566,25 @@
           ]
         }
       ]
+    }
+  },
+  "flow": [
+    {
+      "type": "phase",
+      "phase": "GameConfiguration"
+    },
+    {
+      "type": "phase",
+      "phase": "Setup"
+    },
+    {
+      "type": "phase",
+      "phase": "DistributeTasks"
+    },
+    {
+      "type": "phase",
+      "phase": "Round",
+      "repetition": "forever"
     }
   ]
 }

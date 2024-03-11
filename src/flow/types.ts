@@ -1,22 +1,4 @@
-import { GameState } from "../types";
-
-class FlowSignal extends Error {
-  gameState: GameState;
-
-  constructor(gameState: GameState) {
-    super();
-    this.gameState = gameState;
-  }
-}
-export class EndPhaseFlowSignal extends FlowSignal {}
-export class EndGameFlowSignal extends FlowSignal {
-  winners: string[];
-
-  constructor(gameState: GameState, winners: string[]) {
-    super(gameState);
-    this.winners = winners;
-  }
-}
+import { PhaseRepetition } from "../types";
 
 export enum BlockType {
   EVENT = "event",
@@ -94,23 +76,16 @@ export type InputBlock = {
   form: InputField[];
 };
 
-export enum PhaseRepetition {
-  ONCE = "once",
-  FOREVER = "forever",
-  FOR_EACH_PLAYER = "forEachPlayer",
-}
 type BasePhaseBlock = {
   type: BlockType.PHASE;
-  repetition: PhaseRepetition;
-  name?: string;
-  blocks: FlowBlock[];
+  phase: string;
 };
 export type EachPlayerPhaseBlock = BasePhaseBlock & {
   repetition: PhaseRepetition.FOR_EACH_PLAYER;
   startingPlayer?: string;
 };
 type OtherPhaseBlock = BasePhaseBlock & {
-  repetition: PhaseRepetition.ONCE | PhaseRepetition.FOREVER;
+  repetition?: PhaseRepetition.ONCE | PhaseRepetition.FOREVER;
 };
 export type PhaseBlock = EachPlayerPhaseBlock | OtherPhaseBlock;
 

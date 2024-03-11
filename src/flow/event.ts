@@ -22,10 +22,9 @@ import {
   CollectionPickMethod,
   MoveComponentBlock,
   ShuffleBlock,
-  EndPhaseFlowSignal,
   EndGameBlock,
-  EndGameFlowSignal,
 } from "./types";
+import { EndPhaseFlowSignal, EndGameFlowSignal } from "../phase/types";
 
 const prettyPrint = (obj: any) => JSON.stringify(obj, null, 2);
 
