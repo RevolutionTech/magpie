@@ -5,6 +5,7 @@ import { BaseBlockClass } from "../flow/base";
 import { GameState } from "../types";
 import { shiftArray } from "../utils";
 import { VariableContainer } from "../variables";
+import { View } from "../views";
 import { blockClassFactory } from "./factory";
 import {
   EachPlayerPhaseDefinition,
@@ -23,6 +24,7 @@ export abstract class BasePhase {
 
   constructor(
     phases: Record<string, PhaseDefinition>,
+    views: Record<string, View>,
     name: string,
     overrideDefinition?: PhaseDefinition,
     isImplicit?: boolean
@@ -31,7 +33,7 @@ export abstract class BasePhase {
     this.isImplicit = isImplicit ?? false;
     this.definition = overrideDefinition ?? phases[name];
     this.blocks = this.definition.blocks.map((block) =>
-      blockClassFactory(phases, block)
+      blockClassFactory(phases, views, block, this.definition.view)
     );
   }
 
@@ -131,11 +133,12 @@ export class EachPlayerPhase extends BasePhase {
 
   constructor(
     phases: Record<string, PhaseDefinition>,
+    views: Record<string, View>,
     name: string,
     overrideDefinition?: EachPlayerPhaseDefinition,
     isImplicit?: boolean
   ) {
-    super(phases, name, overrideDefinition, isImplicit);
+    super(phases, views, name, overrideDefinition, isImplicit);
     this.startingPlayer = this.definition.startingPlayer;
   }
 

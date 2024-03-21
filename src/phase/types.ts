@@ -3,6 +3,7 @@ import { GameState, PhaseRepetition } from "../types";
 
 type BasePhaseDefinition = {
   blocks: FlowBlock[];
+  view?: string;
 };
 export type EachPlayerPhaseDefinition = BasePhaseDefinition & {
   repetition: PhaseRepetition.FOR_EACH_PLAYER;

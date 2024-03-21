@@ -25,8 +25,7 @@ import {
   EndGameBlock,
 } from "./types";
 import { EndPhaseFlowSignal, EndGameFlowSignal } from "../phase/types";
-
-const prettyPrint = (obj: any) => JSON.stringify(obj, null, 2);
+import { prettyPrint } from "../utils";
 
 export abstract class BaseEventBlockClass extends BaseBlockClass {
   /*

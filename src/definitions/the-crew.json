@@ -400,7 +400,8 @@
             }
           ]
         }
-      ]
+      ],
+      "view": "DistributeTasks"
     },
     "ConsiderCommunication": {
       "repetition": "forEachPlayer",
@@ -451,7 +452,8 @@
             }
           ]
         }
-      ]
+      ],
+      "view": "Play"
     },
     "PlayCard": {
       "repetition": "forEachPlayer",
@@ -495,7 +497,8 @@
           "source": "=Current.Hand",
           "destination": "=Current.PlayArea"
         }
-      ]
+      ],
+      "view": "Play"
     },
     "DiscardPlay": {
       "repetition": "forEachPlayer",
@@ -586,5 +589,19 @@
       "phase": "Round",
       "repetition": "forever"
     }
-  ]
+  ],
+  "views": {
+    "DistributeTasks": [{ "label": "Tasks", "expression": "=DrawnTasks" }],
+    "Play": [
+      {
+        "label": "Tasks",
+        "expression": "=UNION(MAP(Players, Player => [Player.Task]))"
+      },
+      { "label": "Hand", "expression": "=Current.Hand" },
+      {
+        "label": "Discard",
+        "expression": "=SORTED(UNION(MAP(Players, Player => Player.WonCards)), Card => [Card.Suit, Card.Rank])"
+      }
+    ]
+  }
 }

@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import cloneDeep from "lodash/cloneDeep";
+import mapValues from "lodash/mapValues";
 import range from "lodash/range";
 
 import { FlowBlock } from "./flow/types";
@@ -10,6 +11,7 @@ import { PlayerCountRange, requestNumPlayers } from "./players";
 import { GameState } from "./types";
 import { mapKeysDeep } from "./utils";
 import { VariableContainer } from "./variables";
+import { ViewElement, View } from "./views";
 
 type GameDefinition = {
   numPlayers: PlayerCountRange;
@@ -17,12 +19,14 @@ type GameDefinition = {
   playerVariables: VariableContainer;
   phases: Record<string, PhaseDefinition>;
   flow: FlowBlock[];
+  views: Record<string, ViewElement[]>;
 };
 
 export class GameController {
   state: GameState;
   phases: Record<string, PhaseDefinition>;
   flow: FlowBlock[];
+  views: Record<string, View>;
 
   async initialize(filename: string) {
     console.log(`Reading game definition from ${filename}.`);
@@ -46,11 +50,12 @@ export class GameController {
     this.state = new GameState(variableContainer);
     this.phases = definition.phases;
     this.flow = definition.flow;
+    this.views = mapValues(definition.views, (elements) => new View(elements));
   }
 
   async execute() {
     try {
-      return await new OncePhase(this.phases, "Game", {
+      return await new OncePhase(this.phases, this.views, "Game", {
         blocks: this.flow,
       }).execute(this.state);
     } catch (e) {

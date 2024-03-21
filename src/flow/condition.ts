@@ -1,6 +1,7 @@
 import { OncePhase } from "../phase/phase";
 import { PhaseDefinition } from "../phase/types";
 import { GameState } from "../types";
+import { View } from "../views";
 import { BaseBlockClass } from "./base";
 import { BlockType, FlowBlock, ConditionBlock } from "./types";
 
@@ -11,15 +12,24 @@ export class ConditionBlockClass extends BaseBlockClass {
    * evaluates to true.
    */
   phases: Record<string, PhaseDefinition>;
+  views: Record<string, View>;
   type: BlockType.CONDITION;
   expression: string;
   whenTrue: FlowBlock[];
+  viewName?: string;
 
-  constructor(phases: Record<string, PhaseDefinition>, block: ConditionBlock) {
+  constructor(
+    phases: Record<string, PhaseDefinition>,
+    views: Record<string, View>,
+    block: ConditionBlock,
+    viewName?: string
+  ) {
     super();
     this.phases = phases;
+    this.views = views;
     this.expression = block.expression;
     this.whenTrue = block.whenTrue;
+    this.viewName = viewName;
   }
 
   async execute(currentState: GameState) {
@@ -28,8 +38,9 @@ export class ConditionBlockClass extends BaseBlockClass {
       console.log("Condition is true. Following conditional blocks.");
       return await new OncePhase(
         this.phases,
+        this.views,
         `When ${this.expression}`,
-        { blocks: this.whenTrue },
+        { blocks: this.whenTrue, view: this.viewName },
         true
       ).execute(currentState);
     }

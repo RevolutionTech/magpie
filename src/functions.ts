@@ -6,6 +6,7 @@ import min from "lodash/min";
 import minBy from "lodash/minBy";
 import range from "lodash/range";
 import some from "lodash/some";
+import sortBy from "lodash/sortBy";
 import sum from "lodash/sum";
 import lodashUnion from "lodash/union";
 
@@ -49,4 +50,5 @@ export const FUNCTIONS = {
   map,
   if: if_,
   ifs,
+  sorted: sortBy,
 };

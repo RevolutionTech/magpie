@@ -2,6 +2,7 @@ import inquirer from "inquirer";
 
 import { GameState } from "../types";
 import { assertNever } from "../utils";
+import { View } from "../views";
 import { BaseBlockClass } from "./base";
 import { BlockType, InputField, InputBlock, InputFieldType } from "./types";
 
@@ -13,10 +14,12 @@ export class InputBlockClass extends BaseBlockClass {
    */
   type: BlockType.INPUT;
   form: InputField[];
+  view?: View;
 
-  constructor(block: InputBlock) {
+  constructor(block: InputBlock, view?: View) {
     super();
     this.form = block.form;
+    this.view = view;
   }
 
   constructInquirerQuestions(gameState: GameState) {
@@ -55,6 +58,7 @@ export class InputBlockClass extends BaseBlockClass {
   }
 
   async execute(currentState: GameState) {
+    this.view?.render(currentState);
     const questions = this.constructInquirerQuestions(currentState);
     const answers = await inquirer.prompt(questions);
     return new GameState({ ...currentState.variables, ...answers });
